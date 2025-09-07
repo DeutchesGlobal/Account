@@ -10,17 +10,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- jsPDF for receipts (used later) -->
+  <!-- jsPDF for receipts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- EmailJS for notifications -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
   <style>
     /*
-      Chunk 1 styles: Mobile-first, glassmorphism theme
-      - Use custom properties for quick theme changes
-      - Designed to be expanded in further chunks
+      Upgraded styles: Enhanced glassmorphism, dark mode support, animations, improved responsiveness.
+      - Added dark mode variables and toggle.
+      - Added transitions for modals and cards.
+      - Improved hero layout and services grid.
+      - Enhanced accessibility with better contrasts and focus styles.
     */
     :root{
       --bg: linear-gradient(180deg,#f5f7fb 0%, #eef3fb 100%);
+      --header-bg: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.6));
       --glass: rgba(255,255,255,0.62);
       --glass-2: rgba(255,255,255,0.85);
       --primary: #003366;
@@ -32,19 +37,34 @@
       font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
 
+    [data-theme="dark"] {
+      --bg: linear-gradient(180deg, #1a202c 0%, #2d3748 100%);
+      --header-bg: linear-gradient(180deg, rgba(26,32,44,0.75), rgba(45,55,72,0.6));
+      --glass: rgba(45,55,72,0.62);
+      --glass-2: rgba(45,55,72,0.85);
+      --primary: #4299e1;
+      --accent: #ed64a6;
+      --muted: #a0aec0;
+      --card-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      --glass-border: rgba(45,55,72,0.5);
+      color: #e2e8f0;
+    }
+
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;background:var(--bg);-webkit-font-smoothing:antialiased;color:#071423}
-    a{color:inherit}
+    [data-theme="dark"] body { color: #e2e8f0; }
+    a{color:inherit;text-decoration:none}
     .container{max-width:1100px;margin:0 auto;padding:0 1rem}
     .skip{position:absolute;left:-999px} .skip:focus{left:1rem;top:1rem;padding:.4rem .6rem;background:white;border-radius:6px;box-shadow:var(--card-shadow)}
 
     /* Header */
     header.site-header{
       position:sticky;top:0;z-index:120;
-      background:linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.6));
+      background:var(--header-bg);
       backdrop-filter: blur(6px);
       border-bottom:1px solid rgba(2,6,23,0.04);
     }
+    [data-theme="dark"] header.site-header { border-bottom:1px solid rgba(255,255,255,0.1); }
     .header-inner{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;gap:.5rem}
     .brand{display:flex;align-items:center;gap:.6rem;cursor:pointer;user-select:none}
     .brand .mark{
@@ -57,35 +77,42 @@
     .brand .subtitle{font-size:.78rem;color:var(--muted);margin-top:2px}
 
     .header-actions{display:flex;align-items:center;gap:.6rem}
-    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .9rem;border-radius:10px;border:none;background:var(--primary);color:white;font-weight:700;cursor:pointer}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .9rem;border-radius:10px;border:none;background:var(--primary);color:white;font-weight:700;cursor:pointer;transition:background 0.2s ease, transform 0.1s ease;}
+    .btn:hover { transform: translateY(-2px); }
     .btn.secondary{background:transparent;border:1px solid rgba(2,6,23,0.06);color:var(--primary);font-weight:700}
-    .icon-btn{background:transparent;border-radius:10px;padding:.5rem;color:var(--muted);border:1px solid rgba(2,6,23,0.04)}
+    [data-theme="dark"] .btn.secondary { border:1px solid rgba(255,255,255,0.1); color:var(--primary); }
+    .icon-btn{background:transparent;border-radius:10px;padding:.5rem;color:var(--muted);border:1px solid rgba(2,6,23,0.04);transition:background 0.2s ease;}
+    [data-theme="dark"] .icon-btn { border:1px solid rgba(255,255,255,0.1); }
 
     /* Hero / landing */
-    .hero{display:grid;grid-template-columns:1fr;gap:1rem;padding:1rem 0}
+    .hero{display:grid;grid-template-columns:1fr;gap:1rem;padding:1rem 0;transition:opacity 0.3s ease;}
     .hero-card{
       background:linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.55));
-      border-radius:var(--radius);box-shadow:var(--card-shadow);padding:1rem;border:1px solid var(--glass-border)
+      border-radius:var(--radius);box-shadow:var(--card-shadow);padding:1rem;border:1px solid var(--glass-border);transition:box-shadow 0.2s ease;
     }
+    .hero-card:hover { box-shadow: 0 12px 40px rgba(2,6,23,0.12); }
     .hero-grid{display:grid;grid-template-columns:1fr;gap:.8rem}
     .hero h1{margin:0;font-size:1.5rem;line-height:1.05}
     .hero p.lead{color:var(--muted);margin-top:.5rem}
 
     .services{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin-top:.7rem}
-    .service{background:var(--glass-2);padding:.65rem;border-radius:12px;box-shadow:var(--card-shadow);border:1px solid rgba(255,255,255,0.6)}
+    .service{background:var(--glass-2);padding:.65rem;border-radius:12px;box-shadow:var(--card-shadow);border:1px solid rgba(255,255,255,0.6);transition:transform 0.2s ease;}
+    .service:hover { transform: translateY(-4px); }
     .service h4{margin:0;font-size:1rem}
     .service p{color:var(--muted);margin-top:.45rem;font-size:.92rem}
 
     .visuals{display:flex;gap:.6rem;margin-top:.6rem}
-    .visuals img{width:100%;height:120px;object-fit:cover;border-radius:10px;box-shadow:var(--card-shadow)}
+    .visuals img{width:100%;height:120px;object-fit:cover;border-radius:10px;box-shadow:var(--card-shadow);transition:transform 0.3s ease;}
+    .visuals img:hover { transform: scale(1.05); }
 
     /* Cards preview (Visa/Mastercard/Amex) */
     .card-stack{position:relative;height:180px;margin-top:.9rem}
     .card{
       position:absolute;width:320px;height:180px;border-radius:14px;color:white;padding:1rem;display:flex;flex-direction:column;justify-content:space-between;
       box-shadow:0 12px 30px rgba(2,6,23,0.12);
-      transform-origin:center;
+      transform-origin:center;transition:transform 0.2s ease;
     }
+    .card:hover { transform: translateY(-5px) rotate(0deg) !important; }
     .card .brand{display:flex;align-items:center;gap:.6rem}
     .card .number{font-weight:800;font-size:1.35rem;letter-spacing:2px}
     .card.visa{background:linear-gradient(135deg,#113a63,#0066cc);left:0;top:0;transform:rotate(-6deg)}
@@ -95,17 +122,25 @@
     /* App shell placeholder (hidden until sign in) */
     .app-shell{display:none;margin-top:1rem}
     .app-grid{display:grid;grid-template-columns:1fr;gap:1rem}
-    .onboarding{background:var(--glass-2);padding:1rem;border-radius:12px;border:1px solid rgba(255,255,255,0.6);box-shadow:var(--card-shadow)}
+    .onboarding{background:var(--glass-2);padding:1rem;border-radius:12px;border:1px solid rgba(255,255,255,0.6);box-shadow:var(--card-shadow);transition:box-shadow 0.2s ease;}
+    .onboarding:hover { box-shadow: 0 12px 40px rgba(2,6,23,0.12); }
 
     /* footer */
     footer.site-footer{margin-top:1rem;padding:1rem 0;color:var(--muted);font-size:.92rem;border-top:1px solid rgba(2,6,23,0.04)}
+    [data-theme="dark"] footer.site-footer { border-top:1px solid rgba(255,255,255,0.1); }
     footer .foot-grid{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center}
 
-    /* Modal basics */
-    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;z-index:220}
-    .modal{background:linear-gradient(180deg,rgba(255,255,255,0.98),white);border-radius:12px;padding:1rem;max-width:820px;width:100%;box-shadow:var(--card-shadow);border:1px solid rgba(2,6,23,0.04)}
+    /* Modal basics with animations */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;z-index:220;transition:opacity 0.3s ease, visibility 0.3s ease;opacity:0;visibility:hidden;}
+    .modal-backdrop.show { opacity:1; visibility:visible; }
+    [data-theme="dark"] .modal-backdrop { background:rgba(0,0,0,0.65); }
+    .modal{background:linear-gradient(180deg,rgba(255,255,255,0.98),white);border-radius:12px;padding:1rem;max-width:820px;width:100%;box-shadow:var(--card-shadow);border:1px solid rgba(2,6,23,0.04);transform:scale(0.95);opacity:0;transition:transform 0.3s ease, opacity 0.3s ease;}
+    .modal-backdrop.show .modal { transform:scale(1); opacity:1; }
+    [data-theme="dark"] .modal { background:linear-gradient(180deg,rgba(45,55,72,0.98),#2d3748); border:1px solid rgba(255,255,255,0.1); }
     .modal h3{margin:0}
-    .input{width:100%;padding:.6rem;border-radius:8px;border:1px solid rgba(2,6,23,0.06);margin-top:.5rem}
+    .input{width:100%;padding:.6rem;border-radius:8px;border:1px solid rgba(2,6,23,0.06);margin-top:.5rem;transition:border 0.2s ease;}
+    .input:focus { border-color:var(--primary); outline:none; }
+    [data-theme="dark"] .input { border:1px solid rgba(255,255,255,0.1); background:rgba(26,32,44,0.5); color:#e2e8f0; }
 
     /* small screens first; larger screens adapt */
     @media(min-width:880px){
@@ -134,6 +169,7 @@
 
       <div class="header-actions" role="toolbar" aria-label="Top actions">
         <button id="openContact" class="btn secondary" aria-haspopup="dialog"><i class="fa-solid fa-phone"></i> Contact</button>
+        <button id="themeToggle" class="icon-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
         <button id="openSignIn" class="btn"><i class="fa-solid fa-right-to-bracket"></i> Sign in</button>
       </div>
     </div>
@@ -141,7 +177,7 @@
 
   <main id="main" class="container" role="main" aria-live="polite">
     <!-- HERO / LANDING -->
-    <section class="hero" aria-labelledby="heroHeading">
+    <section id="landing" class="hero" aria-labelledby="heroHeading">
       <div class="hero-card">
         <div class="hero-grid">
           <div>
@@ -253,7 +289,7 @@
     <footer class="site-footer" role="contentinfo">
       <div class="container foot-grid">
         <div>© <strong>DeutscheGlobal Bank</strong> — All rights reserved.</div>
-        <div style="color:var(--muted)"><a href="#privacy" style="color:var(--muted);text-decoration:none">Privacy</a> · <a href="#security" style="color:var(--muted);text-decoration:none">Security</a> · <a href="#contact" style="color:var(--muted);text-decoration:none">Contact</a></div>
+        <div style="color:var(--muted)"><a href="#privacy" style="color:var(--muted);">Privacy</a> · <a href="#security" style="color:var(--muted);">Security</a> · <a href="#contact" style="color:var(--muted);">Contact</a></div>
       </div>
     </footer>
   </main>
@@ -318,12 +354,12 @@
 
   <script>
     /*
-      CHUNK 1 JS:
-      - Lightweight IndexedDB wrapper (used for auth & user storage)
-      - Sign up / Sign in handlers
-      - Modal open/close & basic accessibility (focus)
-      - Super admin triple-click on logo (opens admin — admin UI added in later chunk)
-      - This chunk intentionally focuses on landing + auth; subsequent chunks will add Dashboard, Admin, Transactions, etc.
+      CHUNK 1 JS (Upgraded):
+      - Added dark mode toggle and persistence.
+      - Integrated EmailJS for auth emails (welcome, reset).
+      - Fixed landing id and display toggles.
+      - Added modal show animations.
+      - Improved seeding and security notes.
     */
 
     // Utilities
@@ -435,7 +471,7 @@
         const users = await DB.getAll('users');
         if(users.length>0) return;
         // create a superadmin (hidden access)
-        const adminPassHash = await sha256('admin'); // default admin password for local management
+        const adminPassHash = await sha256('admin/admin111'); // upgraded default for demo
         await DB.add('users', { id: 'u_superadmin', email: 'admin@deutscheglobal.bank', password: adminPassHash, firstName: 'System', lastName: 'Administrator', role: 'superadmin', createdAt: nowISO(), status: 'active' });
         // create sample professional users
         const people = [
@@ -469,6 +505,18 @@
       // Create a primary checking account
       const account = { id: 'a_'+uid(9), userId: id, accountNumber: 'DE'+Math.floor(10000000 + Math.random()*89999999), accountType: 'checking', balance: 0.00, currency: 'EUR', status: 'active', createdAt: nowISO() };
       await DB.add('accounts', account);
+      // Send welcome email if configured
+      const cfg = JSON.parse(localStorage.getItem('dgb_email_cfg')||'{}');
+      if(cfg.service_id && cfg.template_id && cfg.public_key){
+        try{
+          await emailjs.send(cfg.service_id, cfg.template_id, {
+            to_email: email,
+            subject: 'Welcome to DeutscheGlobal Bank',
+            message: 'Your account has been created successfully. Sign in to get started.',
+            from_name: 'DeutscheGlobal'
+          });
+        }catch(e){ console.warn('Welcome email failed', e); }
+      }
       return user;
     }
 
@@ -503,12 +551,13 @@
       openSignIn.addEventListener('click', ()=>{ openAuth('signin'); });
       ctaRegister.addEventListener('click', ()=>{ openAuth('register'); });
       btnOpenRegister.addEventListener('click', ()=>{ openAuth('register'); });
-      closeAuth.addEventListener('click', ()=> { authModal.style.display = 'none'; });
+      closeAuth.addEventListener('click', ()=> { authModal.classList.remove('show'); setTimeout(()=>{ authModal.style.display = 'none'; }, 300); });
       if(openForgot) openForgot.addEventListener('click', ()=> openAuth('forgot'));
-      if(openContact) openContact.addEventListener('click', ()=> { showToast('Contact center — please call +49 30 1234 5678', 'info'); });
+      if(openContact) openContact.addEventListener('click', openChat); // Upgraded to open chat modal
 
       function openAuth(mode='signin'){
         authModal.style.display = 'flex';
+        setTimeout(()=>{ authModal.classList.add('show'); }, 10);
         const formSign = document.getElementById('formSignIn');
         const formReg = document.getElementById('formRegister');
         const formForgot = document.getElementById('formForgot');
@@ -528,9 +577,11 @@
         try{
           const user = await signIn(email, pw);
           // basic UI transition; full dashboard will be rendered in chunk 2
+          document.getElementById('landing').style.display = 'none';
           document.getElementById('appShell').style.display = 'block';
           document.getElementById('appContent').innerHTML = `<div style="padding:1rem"><h3>Welcome, ${user.firstName} ${user.lastName}</h3><p style="color:var(--muted)">Loading your workspace…</p></div>`;
-          document.getElementById('authModal').style.display = 'none';
+          authModal.classList.remove('show');
+          setTimeout(()=>{ authModal.style.display = 'none'; }, 300);
           showToast('Signed in', 'success');
           // in next chunks we'll populate dashboard; for now, set preview
           document.getElementById('uNamePreview').textContent = `${user.firstName} ${user.lastName}`;
@@ -559,13 +610,32 @@
         }
       });
 
-      // Forgot password (basic behavior) — in production integrate with secure email workflows
+      // Forgot password (integrated with EmailJS)
       document.getElementById('formForgot').addEventListener('submit', async function(e){
         e.preventDefault();
         const email = document.getElementById('f_email').value.trim();
         if(!email){ showToast('Please enter your email', 'error'); return; }
-        // NOTE: production: trigger secure reset via backend. Here, we show friendly message.
-        showToast('If an account exists with this email, you will receive reset instructions.', 'info');
+        const cfg = JSON.parse(localStorage.getItem('dgb_email_cfg')||'{}');
+        const users = await DB.getAll('users');
+        if(users.find(u=>u.email.toLowerCase() === email.toLowerCase())){
+          if(cfg.service_id && cfg.template_id && cfg.public_key){
+            try{
+              await emailjs.send(cfg.service_id, cfg.template_id, {
+                to_email: email,
+                subject: 'DeutscheGlobal Password Reset',
+                message: 'Click this link to reset your password: [secure link placeholder for production]',
+                from_name: 'DeutscheGlobal'
+              });
+              showToast('Reset instructions sent to your email', 'success');
+            }catch(err){
+              showToast('Failed to send reset email. Please contact support.', 'error');
+            }
+          } else {
+            showToast('Email service not configured. Contact admin.', 'info');
+          }
+        } else {
+          showToast('If an account exists with this email, reset instructions have been sent.', 'info');
+        }
         document.getElementById('formForgot').reset();
         openAuth('signin');
       });
@@ -588,11 +658,8 @@
           const pwd = prompt('Super Admin access — enter password:');
           if(pwd === 'admin/admin111'){
             // show admin modal (admin UI will be in chunk 3)
-            // Temporarily use alert to confirm secret worked (admin UI injected later)
             showToast('Admin access granted — launching console', 'success');
-            // in future chunk, this will call openAdmin()
-            // Example placeholder:
-            // openAdmin();
+            openAdmin();
           } else {
             showToast('Invalid admin password', 'error');
           }
@@ -604,6 +671,17 @@
 
     // Initialize DB seed & restore session if present
     (async function init(){
+      // EmailJS init if configured
+      const cfg = JSON.parse(localStorage.getItem('dgb_email_cfg')||'{}');
+      if(cfg.public_key) emailjs.init(cfg.public_key);
+      // Dark mode
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.getElementById('themeToggle').addEventListener('click', () => {
+        const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+      });
       await seedIfEmpty();
       try{
         const s = JSON.parse(localStorage.getItem('dgb_session') || 'null');
@@ -611,28 +689,25 @@
           // fetch user and automatically show app shell preview (full dashboard in chunk 2)
           const users = await DB.getAll('users'); const u = users.find(x=>x.id === s.userId);
           if(u){
-            document.getElementById('appShell').style.display = 'block';
             document.getElementById('landing').style.display = 'none';
+            document.getElementById('appShell').style.display = 'block';
             document.getElementById('uNamePreview').textContent = `${u.firstName} ${u.lastName}`;
             document.getElementById('uMailPreview').textContent = u.email;
           }
         }
       }catch(e){ console.warn('Session restore failed', e); }
     })();
-
-    /* CHUNK 1 END - append CHUNK 2 (Dashboard, Accounts, Transfers, Transactions, PDF receipts, Admin CRUD, CSV/JSON import/export, WebSocket mock, EmailJS integration) here */
   </script>
-</body>
-</html>
 <!-- CHUNK 2 START -->
 <script>
 /*
-  CHUNK 2
+  CHUNK 2 (Upgraded)
   Dashboard, Accounts, Transfers, Transactions, Receipts, UI wiring
-  Assumes CHUNK 1 defined: DB, sha256, showToast, seedIfEmpty, registerUser, signIn, signOut, and basic DOM elements.
+  - Added chat modal for support/contact.
+  - Improved render functions with better layouts.
+  - Added mock stock updates.
 */
 
-/* Ensure App exists */
 window.App = window.App || { user: null, stocks: {}, fx: { EUR:1, USD:1.09, GBP:0.86 }, symbols: ['DAX','DBX','BMW','SAP','BAYN'] };
 
 /* Ensure PushMock exists for notifications */
@@ -649,9 +724,9 @@ function ensureModal(id, htmlContent) {
   wrapper.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${htmlContent}</div>`;
   document.body.appendChild(wrapper);
   // dismiss on backdrop click
-  wrapper.addEventListener('click', (e)=>{ if(e.target===wrapper) wrapper.style.display='none'; });
+  wrapper.addEventListener('click', (e)=>{ if(e.target===wrapper) { wrapper.classList.remove('show'); setTimeout(()=>{ wrapper.style.display = 'none'; }, 300); } });
   // accessibility trap basic: ESC to close
-  wrapper.addEventListener('keydown', (e)=>{ if(e.key==='Escape') wrapper.style.display='none'; });
+  wrapper.addEventListener('keydown', (e)=>{ if(e.key==='Escape') { wrapper.classList.remove('show'); setTimeout(()=>{ wrapper.style.display = 'none'; }, 300); } });
   return wrapper;
 }
 
@@ -692,10 +767,45 @@ ensureModal('feedbackModal', `
   <div style="text-align:right;margin-top:.6rem"><button class="btn" id="fb_ok">Done</button></div>
 `);
 
+/* Create Chat Modal (new feature for support) */
+ensureModal('chatModal', `
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h3>Support Chat</h3>
+    <button class="btn secondary" id="closeChatModal">Close</button>
+  </div>
+  <div id="chatBody" style="height:200px;overflow:auto;background:var(--glass-2);padding:.5rem;border-radius:8px;border:1px solid var(--glass-border);margin-top:.6rem"></div>
+  <input id="chatInput" class="input" placeholder="Type your message..." style="margin-top:.5rem" />
+  <div style="text-align:right;margin-top:.6rem"><button id="chatSend" class="btn">Send</button></div>
+`);
+
+/* Wire modals with animations */
+function openModal(id){
+  const modal = document.getElementById(id);
+  modal.style.display = 'flex';
+  setTimeout(()=>{ modal.classList.add('show'); }, 10);
+}
+
 /* Wire transfer modal controls */
-document.getElementById('closeTransferModal').addEventListener('click', ()=> document.getElementById('transferModal').style.display='none');
-document.getElementById('closeFeedbackModal').addEventListener('click', ()=> document.getElementById('feedbackModal').style.display='none');
-document.getElementById('fb_ok').addEventListener('click', ()=> document.getElementById('feedbackModal').style.display='none');
+document.getElementById('closeTransferModal').addEventListener('click', ()=> { const m = document.getElementById('transferModal'); m.classList.remove('show'); setTimeout(()=>{ m.style.display='none'; }, 300); });
+document.getElementById('closeFeedbackModal').addEventListener('click', ()=> { const m = document.getElementById('feedbackModal'); m.classList.remove('show'); setTimeout(()=>{ m.style.display='none'; }, 300); });
+document.getElementById('fb_ok').addEventListener('click', ()=> { const m = document.getElementById('feedbackModal'); m.classList.remove('show'); setTimeout(()=>{ m.style.display='none'; }, 300); });
+
+/* Wire chat modal */
+document.getElementById('closeChatModal').addEventListener('click', ()=> { const m = document.getElementById('chatModal'); m.classList.remove('show'); setTimeout(()=>{ m.style.display='none'; }, 300); });
+document.getElementById('chatSend').addEventListener('click', ()=>{
+  const input = document.getElementById('chatInput');
+  const body = document.getElementById('chatBody');
+  const msg = input.value.trim();
+  if(!msg) return;
+  body.innerHTML += `<div style="margin-bottom:.5rem"><strong>You:</strong> ${msg}</div>`;
+  input.value = '';
+  body.scrollTop = body.scrollHeight;
+  setTimeout(()=>{
+    body.innerHTML += `<div style="margin-bottom:.5rem"><strong>Support:</strong> Thank you for your message. Our team will respond shortly.</div>`;
+    body.scrollTop = body.scrollHeight;
+  }, 1500);
+});
+window.openChat = ()=>{ openModal('chatModal'); };
 
 /* Receipt generation using jsPDF (already loaded in head) */
 async function generateReceiptPDF(tx) {
@@ -776,9 +886,9 @@ document.getElementById('tr_submit').addEventListener('click', async function(e)
     // Show feedback modal
     document.getElementById('fb_title').textContent = 'Transfer initiated';
     document.getElementById('fb_body').textContent = `Your transfer (${new Intl.NumberFormat('de-DE',{style:'currency',currency}).format(amount)}) has been queued and is pending approval. You will be notified when processed. Reference: ${tx.id}`;
-    document.getElementById('feedbackModal').style.display = 'flex';
+    openModal('feedbackModal');
     // close transfer modal
-    document.getElementById('transferModal').style.display = 'none';
+    const tm = document.getElementById('transferModal'); tm.classList.remove('show'); setTimeout(()=>{ tm.style.display='none'; }, 300);
     // refresh UI
     await renderTransactions(); await renderAccounts();
   } catch (err) {
@@ -804,9 +914,9 @@ async function renderDashboardOverview() {
     <div style="text-align:right"><div style="color:var(--muted);font-size:.85rem">Total balance</div><div style="font-weight:800">${new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(total)}</div></div>
   </div>`;
   // account cards
-  const cardsWrap = document.createElement('div'); cardsWrap.style.display='grid'; cardsWrap.style.gridTemplateColumns='1fr 1fr'; cardsWrap.style.gap='8px'; cardsWrap.style.marginTop='12px';
+  const cardsWrap = document.createElement('div'); cardsWrap.style.display='grid'; cardsWrap.style.gridTemplateColumns='repeat(auto-fit, minmax(200px, 1fr))'; cardsWrap.style.gap='8px'; cardsWrap.style.marginTop='12px';
   for(const a of accounts){
-    const c = document.createElement('div'); c.className='account-card';
+    const c = document.createElement('div'); c.className='account-card service'; // reuse service style for hover
     c.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
       <div>
         <div style="font-weight:800">${a.accountType.toUpperCase()}</div>
@@ -825,12 +935,13 @@ async function renderDashboardOverview() {
   const allTx = await DB.getAll('transactions');
   const myIds = accounts.map(a=>a.id);
   const myTx = allTx.filter(t=> myIds.includes(t.fromAccountId) || myIds.includes(t.toAccountId)).sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt)).slice(0,8);
-  const txCard = document.createElement('div'); txCard.className='account-card'; txCard.style.marginTop='10px';
+  const txCard = document.createElement('div'); txCard.className='onboarding'; txCard.style.marginTop='1rem';
   txCard.innerHTML = `<h4>Recent activity</h4>`;
-  const table = document.createElement('table'); table.className='table'; table.innerHTML = `<thead><tr><th>Date</th><th>From</th><th>Amount</th><th>Status</th></tr></thead>`;
+  const table = document.createElement('table'); table.style.width='100%'; table.style.borderCollapse='collapse';
+  table.innerHTML = `<thead><tr><th>Date</th><th>From</th><th>Amount</th><th>Status</th></tr></thead>`;
   const tb = document.createElement('tbody');
   myTx.forEach(t=>{
-    const tr = document.createElement('tr');
+    const tr = document.createElement('tr'); tr.style.borderBottom = '1px solid var(--glass-border)';
     tr.innerHTML = `<td>${new Date(t.createdAt).toLocaleString()}</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis">${t.fromAccountId}</td><td>${new Intl.NumberFormat('de-DE',{style:'currency',currency:t.currency}).format(t.amount)}</td><td>${t.status}</td>`;
     tb.appendChild(tr);
   });
@@ -847,7 +958,7 @@ async function openTransferForAccount(accountId){
   document.getElementById('tr_to').value = '';
   document.getElementById('tr_amount').value = '';
   document.getElementById('tr_desc').value = '';
-  document.getElementById('transferModal').style.display = 'flex';
+  openModal('transferModal');
   document.getElementById('tr_to').focus();
 }
 
@@ -858,10 +969,11 @@ async function renderAccounts() {
   const accounts = (await DB.getAll('accounts')).filter(a=>a.userId===App.user.id);
   const wrapper = document.createElement('div'); wrapper.className='onboarding';
   wrapper.innerHTML = `<h3>Accounts</h3><p style="color:var(--muted)">Manage your accounts, view IBAN and balances.</p>`;
-  const table = document.createElement('table'); table.className='table'; table.innerHTML = `<thead><tr><th>Type</th><th>Number</th><th>Balance</th><th>Actions</th></tr></thead>`;
+  const table = document.createElement('table'); table.style.width='100%'; table.style.borderCollapse='collapse';
+  table.innerHTML = `<thead><tr><th>Type</th><th>Number</th><th>Balance</th><th>Actions</th></tr></thead>`;
   const tb = document.createElement('tbody');
   for(const a of accounts){
-    const tr = document.createElement('tr');
+    const tr = document.createElement('tr'); tr.style.borderBottom = '1px solid var(--glass-border)';
     tr.innerHTML = `<td>${a.accountType}</td><td>${a.accountNumber}</td><td>${new Intl.NumberFormat('de-DE',{style:'currency',currency:a.currency}).format(a.balance)}</td><td><button class="btn ghost" onclick="openTransferForAccount('${a.id}')">Send</button> <button class="btn" onclick="downloadStatement('${a.id}')">Statement</button></td>`;
     tb.appendChild(tr);
   }
@@ -899,10 +1011,11 @@ async function renderTransactions() {
   const txs = (await DB.getAll('transactions')).filter(t=> myIds.includes(t.fromAccountId) || myIds.includes(t.toAccountId)).sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
   const wrapper = document.createElement('div'); wrapper.className='onboarding';
   wrapper.innerHTML = `<h3>Transactions</h3><p style="color:var(--muted)">Complete history of your transfers and payments</p>`;
-  const table = document.createElement('table'); table.className='table'; table.innerHTML = `<thead><tr><th>ID</th><th>Date</th><th>From</th><th>To</th><th>Amount</th><th>Status</th><th>Receipt</th></tr></thead>`;
+  const table = document.createElement('table'); table.style.width='100%'; table.style.borderCollapse='collapse';
+  table.innerHTML = `<thead><tr><th>ID</th><th>Date</th><th>From</th><th>To</th><th>Amount</th><th>Status</th><th>Receipt</th></tr></thead>`;
   const tb = document.createElement('tbody');
   txs.forEach(t=>{
-    const tr = document.createElement('tr');
+    const tr = document.createElement('tr'); tr.style.borderBottom = '1px solid var(--glass-border)';
     const receiptBtn = t.status === 'completed' ? `<button class="btn ghost" onclick='(async ()=>{ await generateReceiptPDF(${JSON.stringify(t).replace(/"/g,"&quot;")}); })()'>PDF</button>` : '-';
     tr.innerHTML = `<td>${t.id}</td><td>${new Date(t.createdAt).toLocaleString()}</td><td style="max-width:120px;overflow:hidden">${t.fromAccountId}</td><td style="max-width:120px;overflow:hidden">${t.toAccountId}</td><td>${new Intl.NumberFormat('de-DE',{style:'currency',currency:t.currency}).format(t.amount)}</td><td>${t.status}</td><td>${receiptBtn}</td>`;
     tb.appendChild(tr);
@@ -911,14 +1024,14 @@ async function renderTransactions() {
   main.appendChild(wrapper);
 }
 
-/* Render investments (simple mock) */
+/* Render investments (simple mock with updates) */
 async function renderInvestments() {
   const main = document.getElementById('appContent'); main.innerHTML = '';
   const wrapper = document.createElement('div'); wrapper.className = 'onboarding';
   wrapper.innerHTML = `<h3>Investments</h3><p style="color:var(--muted)">Your portfolio and mock trading tools</p>`;
-  const grid = document.createElement('div'); grid.style.display='flex'; grid.style.gap='8px'; grid.style.flexWrap='wrap';
+  const grid = document.createElement('div'); grid.style.display='grid'; grid.style.gridTemplateColumns='repeat(auto-fit, minmax(140px, 1fr))'; grid.style.gap='8px';
   App.symbols.forEach(s=>{
-    const c = document.createElement('div'); c.style.minWidth='140px'; c.style.background='var(--glass-2)'; c.style.padding='8px'; c.style.borderRadius='10px';
+    const c = document.createElement('div'); c.className='service'; // hover effect
     const price = (App.stocks[s] && App.stocks[s].price) ? App.stocks[s].price : Math.round((20 + Math.random()*200)*100)/100;
     c.innerHTML = `<div style="font-weight:700">${s}</div><div style="color:var(--muted);margin-top:.35rem">${price.toFixed(2)} EUR</div><div style="margin-top:.6rem"><button class="btn ghost" onclick="buyMock('${s}')">Buy 1</button></div>`;
     grid.appendChild(c);
@@ -963,22 +1076,6 @@ function buyMock(sym){
 document.getElementById('btnSpeedTours')?.addEventListener('click', async ()=>{ await renderDashboardOverview(); showToast('Welcome to your banking tour — navigate on bottom nav or the sidebar', 'info'); });
 document.getElementById('btnSignOut')?.addEventListener('click', async ()=>{ await signOut(); });
 
-/* Bottom nav (if present) wiring - detect any nav buttons */
-document.querySelectorAll('.nav-btn').forEach(btn=>{
-  btn.addEventListener('click', async (e)=>{
-    const nav = btn.dataset.nav;
-    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    switch(nav){
-      case 'overview': await renderDashboardOverview(); break;
-      case 'transfer': await openTransferForAccount(); break;
-      case 'transactions': await renderTransactions(); break;
-      case 'support': await renderSupport(); break;
-      default: await renderDashboardOverview();
-    }
-  });
-});
-
 /* If left-side primary nav exists (Chunk 1 reserved) wire it — fallback to bottom nav */
 const sideMap = {
   'btnOverview': renderDashboardOverview,
@@ -1017,6 +1114,11 @@ async function initialRender() {
     document.getElementById('landing').style.display = 'block';
     document.getElementById('appShell').style.display = 'none';
   }
+  // Mock stock updates
+  setInterval(()=>{
+    App.symbols.forEach(s=> App.stocks[s] = {price: Math.round((20 + Math.random()*200)*100)/100 });
+    if(document.querySelector('#appContent h3')?.textContent === 'Investments') renderInvestments();
+  }, 15000);
 }
 
 /* Helper to refresh accounts view and transactions */
@@ -1055,15 +1157,16 @@ window.generateReceiptPDF = generateReceiptPDF;
   PushMock.connect((m)=>{ showToast(m.title || 'Notification', 'info', 4000); });
 })();
 </script>
-<!-- CHUNK<!-- CHUNK 3 START -->
+<!-- CHUNK 3 START -->
 <script>
 /*
-  CHUNK 3
+  CHUNK 3 (Upgraded)
   Admin Console, CSV/JSON import/export, EmailJS integration hooks, WebSocket mock,
   Audit logs, Service Worker & manifest generators (downloadable), accessibility hardening,
   and final wiring for admin transaction approval/rejection with real-time UI updates.
-
-  Paste this after CHUNK 2. Assumes CHUNK 1 & CHUNK 2 appended earlier (DB, App, showToast, etc.)
+  - Improved admin modal layout.
+  - Added animations to admin open.
+  - Enhanced export/import.
 */
 
 /* ======= Utilities & Safety checks ======= */
@@ -1124,14 +1227,14 @@ function createAdminModalIfMissing(){
 
         <section style="grid-column:span 2;background:var(--glass-2);padding:.8rem;border-radius:10px">
           <h4>Audit Logs</h4>
-          <div id="auditList" style="max-height:160px;overflow:auto;background:white;padding:.5rem;border-radius:8px;border:1px solid rgba(2,6,23,.04)"></div>
+          <div id="auditList" style="max-height:160px;overflow:auto;background:var(--glass-2);padding:.5rem;border-radius:8px;border:1px solid var(--glass-border)"></div>
         </section>
       </div>
     </div>
   `;
   document.body.appendChild(div);
 
-  document.getElementById('adminCloseBtn').addEventListener('click', ()=> document.getElementById('adminModal').style.display='none');
+  document.getElementById('adminCloseBtn').addEventListener('click', ()=> { const m = document.getElementById('adminModal'); m.classList.remove('show'); setTimeout(()=>{ m.style.display='none'; }, 300); });
   document.getElementById('adminCreateUserBtn').addEventListener('click', adminCreateUser);
   document.getElementById('adminExportJSON').addEventListener('click', adminExportJSON);
   document.getElementById('adminExportCSV').addEventListener('click', adminExportCSV);
@@ -1231,7 +1334,7 @@ window.adminApproveTx = async function(txId){
     PushMock.send({ title: `Transaction ${tx.id} completed`, body: `Your payment of ${tx.amount} ${tx.currency} was processed.` });
     renderAdminTables();
     // immediate UI update for signed-in user
-    if(App.user) { await renderDashboardOverview(); await renderTransactions(); }
+    if(App.user) { await refreshViews(); }
     // auto-generate receipt PDF for audit and user convenience
     generateReceiptPDF(tx);
   }catch(e){ console.error('approve error', e); showToast('Approval failed','error'); }
@@ -1247,7 +1350,7 @@ window.adminRejectTx = async function(txId){
     showToast('Transaction declined', 'info');
     PushMock.send({ title: `Transaction ${tx.id} declined`, body: `Your payment was declined by the bank.` });
     renderAdminTables();
-    if(App.user){ await renderDashboardOverview(); await renderTransactions(); }
+    if(App.user){ await refreshViews(); }
   }catch(e){ console.error('reject error', e); showToast('Rejection failed','error'); }
 };
 
@@ -1255,7 +1358,7 @@ window.adminRejectTx = async function(txId){
 async function renderAuditList(){
   const logs = await DB.getAll('audit'); const container = document.getElementById('auditList');
   if(!container) return;
-  container.innerHTML = logs.slice(-200).reverse().map(l=>`<div style="padding:.35rem;border-bottom:1px dashed rgba(2,6,23,.04);font-size:.9rem"><strong>${l.action}</strong> <span style="color:var(--muted);font-size:.8rem">at ${new Date(l.createdAt).toLocaleString()}</span><div style="color:var(--muted);margin-top:.2rem">${JSON.stringify(l.data).slice(0,200)}</div></div>`).join('');
+  container.innerHTML = logs.slice(-200).reverse().map(l=>`<div style="padding:.35rem;border-bottom:1px dashed var(--glass-border);font-size:.9rem"><strong>${l.action}</strong> <span style="color:var(--muted);font-size:.8rem">at ${new Date(l.createdAt).toLocaleString()}</span><div style="color:var(--muted);margin-top:.2rem">${JSON.stringify(l.data).slice(0,200)}</div></div>`).join('');
 }
 
 /* ======= Backup / Export / Import ======= */
@@ -1266,64 +1369,64 @@ async function adminExportJSON(){
     transactions: await DB.getAll('transactions'),
     audit: await DB.getAll('audit')
   };
-  const blob = new Blob([JSON.stringify(payload,null,2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'dgbank_backup.json'; a.click(); URL.revokeObjectURL(url);
-  showToast('JSON export started', 'success');
+  downloadFile(JSON.stringify(payload,null,2), 'dgbank_backup.json', 'application/json');
+  showToast('JSON export downloaded', 'success');
 }
 
 async function adminExportCSV(){
   const users = await DB.getAll('users');
   const csv = ['id,firstName,lastName,email,role,createdAt', ...users.map(u=> [u.id, u.firstName||'', u.lastName||'', u.email||'', u.role||'user', u.createdAt||''].map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',') )].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'users.csv'; a.click(); URL.revokeObjectURL(url);
-  showToast('CSV export started', 'success');
+  downloadFile(csv, 'users.csv', 'text/csv');
+  showToast('CSV export downloaded', 'success');
 }
 
 async function adminImportFile(){
   const f = document.getElementById('adminImportFile').files[0];
   if(!f) return showToast('Choose a file to import', 'error');
-  const txt = await f.text();
-  if(f.name.endsWith('.json')){
-    try{
-      const obj = JSON.parse(txt);
-      if(obj.users){ await DB.clear('users'); for(const u of obj.users) await DB.add('users', u); }
-      if(obj.accounts){ await DB.clear('accounts'); for(const a of obj.accounts) await DB.add('accounts', a); }
-      if(obj.transactions){ await DB.clear('transactions'); for(const t of obj.transactions) await DB.add('transactions', t); }
-      if(obj.audit){ await DB.clear('audit'); for(const a of obj.audit) await DB.add('audit', a); }
-      showToast('JSON import completed', 'success');
-      await renderAdminTables();
-    }catch(e){ console.error('import json', e); showToast('Import failed', 'error'); }
-  } else if(f.name.endsWith('.csv')){
-    // basic CSV user import
-    try{
-      const lines = txt.split(/\r?\n/); const hdr = lines.shift().split(',').map(h=>h.replace(/(^"|"$)/g,''));
-      for(const line of lines){
-        if(!line.trim()) continue;
-        const cols = line.split(',').map(c=>c.replace(/(^"|"$)/g,''));
-        const obj = {}; hdr.forEach((h,i)=> obj[h] = cols[i]);
-        const pwhash = await sha256('Imported!2025');
-        const user = { id: obj.id || 'u_'+uid(8), firstName: obj.firstName||'', lastName: obj.lastName||'', email: obj.email||'', password: pwhash, role: obj.role||'user', createdAt: obj.createdAt||nowISO() };
-        await DB.add('users', user);
-      }
-      showToast('CSV import completed', 'success'); await renderAdminTables();
-    }catch(e){ console.error('import csv', e); showToast('CSV import failed', 'error'); }
-  } else showToast('Unsupported file type', 'error');
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const txt = e.target.result;
+    if(f.name.endsWith('.json')){
+      try{
+        const obj = JSON.parse(txt);
+        if(obj.users){ await DB.clear('users'); for(const u of obj.users) await DB.add('users', u); }
+        if(obj.accounts){ await DB.clear('accounts'); for(const a of obj.accounts) await DB.add('accounts', a); }
+        if(obj.transactions){ await DB.clear('transactions'); for(const t of obj.transactions) await DB.add('transactions', t); }
+        if(obj.audit){ await DB.clear('audit'); for(const a of obj.audit) await DB.add('audit', a); }
+        showToast('JSON import completed', 'success');
+        await renderAdminTables();
+      }catch(e){ console.error('import json', e); showToast('Import failed', 'error'); }
+    } else if(f.name.endsWith('.csv')){
+      // basic CSV user import
+      try{
+        const lines = txt.split(/\r?\n/); const hdr = lines.shift().split(',').map(h=>h.replace(/(^"|"$)/g,''));
+        for(const line of lines){
+          if(!line.trim()) continue;
+          const cols = line.split(',').map(c=>c.replace(/(^"|"$)/g,''));
+          const obj = {}; hdr.forEach((h,i)=> obj[h] = cols[i]);
+          const pwhash = await sha256('Imported!2025');
+          const user = { id: obj.id || 'u_'+uid(8), firstName: obj.firstName||'', lastName: obj.lastName||'', email: obj.email||'', password: pwhash, role: obj.role||'user', createdAt: obj.createdAt||nowISO() };
+          await DB.add('users', user);
+        }
+        showToast('CSV import completed', 'success'); await renderAdminTables();
+      }catch(e){ console.error('import csv', e); showToast('CSV import failed', 'error'); }
+    } else showToast('Unsupported file type', 'error');
+  };
+  reader.readAsText(f);
 }
 
 /* ======= EmailJS integration (admin-configurable) ======= */
 function adminSaveEmailCfg(){
   const cfg = { service_id: document.getElementById('email_service_admin').value.trim(), template_id: document.getElementById('email_template_admin').value.trim(), public_key: document.getElementById('email_public_admin').value.trim() };
   localStorage.setItem('dgb_email_cfg', JSON.stringify(cfg));
-  try{ if(cfg.public_key) emailjs.init(cfg.public_key); }catch(e){ console.warn('email init failed', e); }
+  if(cfg.public_key) emailjs.init(cfg.public_key);
   showToast('EmailJS configuration saved', 'success');
 }
 async function adminSendTestEmail(){
   const cfg = JSON.parse(localStorage.getItem('dgb_email_cfg')||'{}');
   if(!cfg.service_id || !cfg.template_id || !cfg.public_key) return showToast('Please configure EmailJS first', 'error');
   try{
-    await emailjs.send(cfg.service_id, cfg.template_id, { to_email: 'admin@deutscheglobal.bank', subject: 'DeutscheGlobal test', message: 'This is a system test.' }, cfg.public_key);
+    await emailjs.send(cfg.service_id, cfg.template_id, { to_email: 'admin@deutscheglobal.bank', subject: 'DeutscheGlobal test', message: 'This is a system test.', from_name: 'DeutscheGlobal' });
     showToast('Test email sent', 'success');
   }catch(e){ console.error('email send',e); showToast('Email send failed', 'error'); }
 }
@@ -1346,7 +1449,7 @@ window.simulateWebSocketMessage = function(title, body){
 /* Allow developer/admin to open admin console (used by triple click) */
 window.openAdmin = async function(){
   createAdminModalIfMissing();
-  document.getElementById('adminModal').style.display = 'flex';
+  openModal('adminModal');
   // populate known email config fields
   const cfg = JSON.parse(localStorage.getItem('dgb_email_cfg')||'{}');
   document.getElementById('email_service_admin').value = cfg.service_id || '';
@@ -1354,9 +1457,6 @@ window.openAdmin = async function(){
   document.getElementById('email_public_admin').value = cfg.public_key || '';
   await renderAdminTables();
 };
-
-/* Admin delete user wrapper (alias from earlier) */
-window.adminDeleteUser = window.adminDeleteUser || (async (userId)=>{ await DB.delete('users', userId); showToast('User removed', 'info'); await renderAdminTables(); });
 
 /* ======= Service Worker & Manifest generator (downloadable helper) ======= */
 function swCode(){
@@ -1382,7 +1482,7 @@ function manifestJSON(){
 
 /* Download helper */
 function downloadFile(content, filename='file.txt', mime='text/plain'){
-  const blob = (content instanceof Blob) ? content : new Blob([content], { type: mime });
+  const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
 }
 
@@ -1397,20 +1497,20 @@ function trapModalFocus(modalBackdrop){
     if(e.key === 'Tab'){
       if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
       else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
-    } else if(e.key === 'Escape'){ modalBackdrop.style.display = 'none'; }
+    } else if(e.key === 'Escape'){ modalBackdrop.classList.remove('show'); setTimeout(()=>{ modalBackdrop.style.display = 'none'; }, 300); }
   });
 }
 
 /* Ensure focus traps on admin modal creation */
 createAdminModalIfMissing();
 trapModalFocus(document.getElementById('adminModal'));
+trapModalFocus(document.getElementById('authModal'));
+trapModalFocus(document.getElementById('transferModal'));
+trapModalFocus(document.getElementById('feedbackModal'));
+trapModalFocus(document.getElementById('chatModal'));
 
 /* ======= Wire super-admin triple click to open admin (completes secret flow) ======= */
-(function wireAdminSecret(){
-  const logo = document.getElementById('siteLogo');
-  let clicks = 0, timer = null;
-  logo.addEventListener('click', ()=>{ clicks++; clearTimeout(timer); timer=setTimeout(()=>clicks=0,1200); if(clicks>=3){ clicks=0; const pwd = prompt('Enter super admin password:'); if(pwd === 'admin/admin111'){ openAdmin(); } else showToast('Invalid admin password','error'); } });
-})();
+/* Already in chunk 1 */
 
 /* ======= Initialize Admin UI when available ======= */
 (async function adminInit(){
@@ -1429,9 +1529,8 @@ window.provideDeploymentFiles = function(){
   // generate sw.js
   downloadFile(swCode(), 'sw.js', 'application/javascript');
   downloadFile(JSON.stringify(manifestJSON(), null, 2), 'manifest.json', 'application/json');
-  showToast('sw.js and manifest.json downloaded to your machine', 'success', 4500);
+  showToast('sw.js and manifest.json downloaded. Place them in your GitHub repo root for PWA support.', 'success', 6000);
 };
-
-/* CHUNK 3 END */
 </script>
-<!-- CHUNK 3 END --> 2 END -->
+</body>
+</html>
