@@ -10,10 +10,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #003366;
-            --secondary-color: #007bff;
+            --primary-color: #004780;
+            --secondary-color: #0066cc;
             --text-color: #333;
-            --bg-color: #f4f7f9;
+            --bg-color: #f5f8fa;
             --card-bg: #fff;
             --border-color: #e0e6e9;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -21,11 +21,11 @@
             --transition-speed: 0.3s ease;
         }
         body.dark-mode {
-            --primary-color: #2c3e50;
+            --primary-color: #34495e;
             --secondary-color: #3498db;
             --text-color: #ecf0f1;
-            --bg-color: #222d3b;
-            --card-bg: #2d3b4b;
+            --bg-color: #2c3e50;
+            --card-bg: #34495e;
             --border-color: #44586d;
         }
 
@@ -34,9 +34,7 @@
             margin: 0;
             padding: 0;
         }
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
         body {
             font-family: var(--font-family);
             background-color: var(--bg-color);
@@ -72,20 +70,14 @@
             text-decoration: none;
             transition: color var(--transition-speed);
         }
-        .nav-links {
-            list-style: none;
-            display: flex;
-            gap: 2rem;
-        }
+        .nav-links { list-style: none; display: flex; gap: 2rem; }
         .nav-links a, .mobile-menu a {
             text-decoration: none;
             color: var(--text-color);
             font-weight: 500;
             transition: color var(--transition-speed);
         }
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--secondary-color);
-        }
+        .nav-links a:hover, .nav-links a.active { color: var(--secondary-color); }
         .cta-button {
             background-color: var(--secondary-color);
             color: #fff;
@@ -119,7 +111,7 @@
             transition: all var(--transition-speed);
         }
         .mobile-menu.active { display: flex; }
-
+        
         /* General Layout & Sections */
         main { padding: 2rem 0; }
         section {
@@ -133,13 +125,32 @@
         h1 { font-size: 2.5rem; }
         h2 { font-size: 2rem; }
         .hero {
-            text-align: center;
-            padding: 4rem 0;
-            background-color: var(--card-bg);
+            position: relative;
+            overflow: hidden;
             border-radius: 10px;
             box-shadow: var(--shadow);
             margin-bottom: 2rem;
-            transition: background-color var(--transition-speed);
+            text-align: center;
+        }
+        .hero-img {
+            width: 100%;
+            height: 450px;
+            object-fit: cover;
+            object-position: center;
+            filter: brightness(0.7);
+        }
+        .hero-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            max-width: 800px;
+        }
+        .hero-content h1 {
+            color: #fff;
+            font-size: 3rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
         .grid-container {
             display: grid;
@@ -212,21 +223,7 @@
         .transaction-item:last-child { border-bottom: none; }
         .transaction-amount.positive { color: #28a745; font-weight: bold; }
         .transaction-amount.negative { color: #dc3545; font-weight: bold; }
-        .stock-ticker {
-            background-color: var(--primary-color);
-            color: #fff;
-            padding: 0.5rem 1rem;
-            overflow: hidden;
-            white-space: nowrap;
-            border-radius: 5px;
-            margin-bottom: 1.5rem;
-        }
-        .stock-ticker span {
-            display: inline-block;
-            animation: ticker 15s linear infinite;
-        }
-        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-
+        
         /* Admin Panel */
         .admin-section { padding-top: 2rem; }
         .admin-nav {
@@ -270,6 +267,7 @@
             width: 90%;
             position: relative;
             transition: background-color var(--transition-speed);
+            text-align: center;
         }
         .modal-close {
             position: absolute;
@@ -281,7 +279,7 @@
             cursor: pointer;
             color: var(--text-color);
         }
-
+        
         /* Footer */
         footer {
             background-color: var(--primary-color);
@@ -304,7 +302,7 @@
             .mobile-menu-btn { display: block; }
             .navbar { justify-content: space-between; }
             .login-btn { display: none; }
-            .hero h1 { font-size: 2rem; }
+            .hero-content h1 { font-size: 2rem; }
         }
     </style>
 </head>
@@ -318,12 +316,11 @@
                     <li><a href="#home" class="nav-link active">Startseite</a></li>
                     <li><a href="#about" class="nav-link">Über Uns</a></li>
                     <li><a href="#services" class="nav-link">Dienstleistungen</a></li>
+                    <li><a href="#testimonials" class="nav-link">Testimonials</a></li>
                     <li class="user-link hidden"><a href="#dashboard" class="nav-link">Dashboard</a></li>
                     <li class="user-link hidden"><a href="#transfer" class="nav-link">Überweisung</a></li>
                     <li class="user-link hidden"><a href="#investments" class="nav-link">Investitionen</a></li>
-                    <li class="user-link hidden"><a href="#loans" class="nav-link">Kredite</a></li>
                     <li class="admin-link hidden"><a href="#admin" class="nav-link">Admin-Panel</a></li>
-                    <li class="user-link hidden"><a href="#profile" class="nav-link">Profil</a></li>
                 </ul>
                 <div class="nav-actions">
                     <button id="theme-toggle" class="btn-icon"><i class="fas fa-moon"></i></button>
@@ -336,13 +333,12 @@
                 <a href="#home" onclick="showSection('home'); toggleMobileMenu()">Startseite</a>
                 <a href="#about" onclick="showSection('about'); toggleMobileMenu()">Über Uns</a>
                 <a href="#services" onclick="showSection('services'); toggleMobileMenu()">Dienstleistungen</a>
+                <a href="#testimonials" onclick="showSection('testimonials'); toggleMobileMenu()">Testimonials</a>
                 <a href="#login" onclick="showSection('login'); toggleMobileMenu()">Login</a>
                 <a href="#dashboard" class="user-link hidden" onclick="showSection('dashboard'); toggleMobileMenu()">Dashboard</a>
                 <a href="#transfer" class="user-link hidden" onclick="showSection('transfer'); toggleMobileMenu()">Überweisung</a>
                 <a href="#investments" class="user-link hidden" onclick="showSection('investments'); toggleMobileMenu()">Investitionen</a>
-                <a href="#loans" class="user-link hidden" onclick="showSection('loans'); toggleMobileMenu()">Kredite</a>
                 <a href="#admin" class="admin-link hidden" onclick="showSection('admin'); toggleMobileMenu()">Admin-Panel</a>
-                <a href="#profile" class="user-link hidden" onclick="showSection('profile'); toggleMobileMenu()">Profil</a>
                 <a href="#" class="user-link hidden" onclick="handleLogout(); toggleMobileMenu()">Logout</a>
             </nav>
         </div>
@@ -352,61 +348,87 @@
         
         <section id="home" class="active">
             <div class="hero">
-                <h1>Ihre globale Bank vor Ort.</h1>
-                <p>Digital. Sicher. Immer für Sie da.</p>
-                <a href="#login" class="cta-button">Jetzt anmelden</a>
+                <img src="https://images.unsplash.com/photo-1579621970563-fa15d315f62e?q=80&w=2070&auto=format&fit=crop" alt="Abstract banking image" class="hero-img">
+                <div class="hero-content">
+                    <h1>Ihre globale Bank vor Ort.</h1>
+                    <p>Finanzlösungen für eine digitale Welt.</p>
+                    <a href="#login" class="cta-button">Jetzt anmelden</a>
+                </div>
             </div>
             <div class="grid-container">
                 <div class="card">
-                    <h3>Sicher und Vertrauenswürdig</h3>
-                    <p>Mit modernsten Sicherheitsstandards schützen wir Ihr Vermögen und Ihre Daten.</p>
+                    <h3>Sichere Transaktionen</h3>
+                    <p>Wir nutzen modernste Verschlüsselung, um Ihr Geld und Ihre Daten zu schützen.</p>
                 </div>
                 <div class="card">
-                    <h3>Flexible Kredite</h3>
-                    <p>Erfüllen Sie sich Ihre Träume mit unseren maßgeschneiderten Finanzierungslösungen.</p>
+                    <h3>24/7 Support</h3>
+                    <p>Unser engagiertes Team ist jederzeit für Ihre Fragen da.</p>
                 </div>
                 <div class="card">
-                    <h3>Intelligente Investitionen</h3>
-                    <p>Maximieren Sie Ihr Vermögen mit unseren KI-gestützten Anlagestrategien.</p>
+                    <h3>KI-gestützte Analysen</h3>
+                    <p>Profitieren Sie von intelligenten Empfehlungen für Ihre Finanzen.</p>
                 </div>
             </div>
         </section>
 
         <section id="about">
             <div class="hero">
-                <h1>Über DeutscheGlobal Bank</h1>
-                <p>Wir sind Ihr Partner für eine sichere finanzielle Zukunft.</p>
+                <img src="https://images.unsplash.com/photo-1549646633-11b0e2717a6a?q=80&w=2070&auto=format&fit=crop" alt="Bank office" class="hero-img">
+                <div class="hero-content">
+                    <h1>Über DeutscheGlobal Bank</h1>
+                    <p>Wir sind Ihr Partner für eine sichere finanzielle Zukunft.</p>
+                </div>
             </div>
+            <p style="margin-top: 2rem;">Seit unserer Gründung im Jahr 1999 haben wir uns von einer regionalen Bank zu einem globalen Finanzinstitut entwickelt. Unsere Mission ist es, die komplexen Aspekte des Bankwesens zu vereinfachen und unseren Kunden intuitive, sichere und leistungsstarke Finanzlösungen anzubieten.</p>
             <div class="grid-container">
                 <div class="card">
                     <h3>Unsere Mission</h3>
-                    <p>Wir streben danach, die komplexen Aspekte des Bankwesens zu vereinfachen und unseren Kunden intuitive, sichere und leistungsstarke Finanzlösungen anzubieten.</p>
+                    <p>Die DeutscheGlobal Bank hat sich zum Ziel gesetzt, die finanzielle Gesundheit unserer Kunden durch Innovation und Vertrauen zu fördern.</p>
                 </div>
                 <div class="card">
-                    <h3>Unsere Geschichte</h3>
-                    <p>Gegründet 1999, haben wir uns von einer regionalen Bank zu einem globalen Finanzinstitut entwickelt, das seinen genossenschaftlichen Werten treu bleibt.</p>
+                    <h3>Unsere Werte</h3>
+                    <p>Integrität, Transparenz und Kundenorientierung sind die Grundpfeiler, auf denen unser Erfolg ruht.</p>
                 </div>
             </div>
         </section>
         
         <section id="services">
             <h2>Unsere Dienstleistungen</h2>
+            <p>Ein umfassendes Angebot, das alle Ihre finanziellen Bedürfnisse abdeckt.</p>
             <div class="grid-container">
                 <div class="card">
                     <h3>Konten & Zahlungen</h3>
-                    <p>Globale Überweisungen, Echtzeit-Zahlungen und flexible Konten.</p>
+                    <p>Globale Überweisungen und Echtzeit-Zahlungen, jederzeit verfügbar.</p>
                 </div>
                 <div class="card">
                     <h3>Kredite & Finanzierung</h3>
-                    <p>Privatkredite, Baufinanzierung und Unternehmenskredite.</p>
+                    <p>Von Privatkrediten bis zur Baufinanzierung - wir sind Ihr Partner.</p>
                 </div>
                 <div class="card">
                     <h3>Anlagen & Investitionen</h3>
-                    <p>Aktienhandel, Fonds und personalisierte Portfolios.</p>
+                    <p>Verwalten Sie Ihr Vermögen mit unserem intelligenten Investment-Portfolio.</p>
                 </div>
                 <div class="card">
                     <h3>Währungsumtausch</h3>
                     <p>Tauschen Sie Währungen zu aktuellen Echtzeit-Kursen.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="testimonials">
+            <h2>Was unsere Kunden sagen</h2>
+            <div class="grid-container">
+                <div class="card">
+                    <p>"Die Überweisungsfunktion ist blitzschnell und die App ist extrem benutzerfreundlich. Sehr empfehlenswert!"</p>
+                    <p style="font-weight: bold; margin-top: 1rem;">- Sarah M., Berlin</p>
+                </div>
+                <div class="card">
+                    <p>"Ich habe noch nie eine so transparente Bank erlebt. Keine versteckten Gebühren und der Support ist top!"</p>
+                    <p style="font-weight: bold; margin-top: 1rem;">- Max P., Hamburg</p>
+                </div>
+                <div class="card">
+                    <p>"Mit den Investitions-Tools konnte ich mein Erspartes endlich sinnvoll anlegen. Einfach großartig!"</p>
+                    <p style="font-weight: bold; margin-top: 1rem;">- Lena B., München</p>
                 </div>
             </div>
         </section>
@@ -425,8 +447,6 @@
                 <button type="submit" class="btn btn-primary">Anmelden</button>
             </form>
             <p style="margin-top: 1rem;">Neu hier? <a href="#register" onclick="showSection('register')">Jetzt registrieren</a></p>
-            <p><a href="#forgot-password" onclick="showSection('forgot-password')">Passwort vergessen?</a></p>
-            <button class="btn btn-secondary" onclick="simulateBiometricLogin()">Biometrischer Login</button>
         </section>
 
         <section id="register" class="form-container">
@@ -441,20 +461,8 @@
             </form>
         </section>
         
-        <section id="forgot-password" class="form-container">
-            <h2>Passwort zurücksetzen</h2>
-            <form id="forgotPasswordForm">
-                <div class="form-group">
-                    <label for="forgotEmail">E-Mail</label>
-                    <input type="email" id="forgotEmail" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Link senden</button>
-            </form>
-        </section>
-
         <section id="dashboard" class="user-section">
             <h2 id="welcomeMessage">Willkommen, [Benutzername]!</h2>
-            <div class="stock-ticker" id="stock-ticker"></div>
             <div class="dashboard-grid">
                 <div>
                     <div class="card mb-2">
@@ -550,44 +558,12 @@
             </div>
         </section>
         
-        <section id="loans" class="user-section">
-            <div class="card">
-                <h2>Kredit beantragen</h2>
-                <form id="loan-application-form">
-                    <div class="form-group">
-                        <label for="loan-amount">Kreditbetrag (€)</label>
-                        <input type="number" id="loan-amount" min="1000" step="100" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="loan-term">Laufzeit (Monate)</label>
-                        <input type="number" id="loan-term" min="12" max="120" step="12" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="loan-income">Monatliches Einkommen (€)</label>
-                        <input type="number" id="loan-income" min="0" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Berechnen & Beantragen</button>
-                </form>
-                <div id="loan-result" style="margin-top: 1rem;"></div>
-            </div>
-        </section>
-
-        <section id="profile" class="user-section">
-            <div class="card">
-                <h2>Mein Profil</h2>
-                <p><strong>Benutzername:</strong> <span id="profileUsername"></span></p>
-                <p><strong>Name:</strong> <span id="profileName"></span></p>
-                <p><strong>E-Mail:</strong> <span id="profileEmail"></span></p>
-            </div>
-        </section>
-
         <section id="admin" class="admin-section">
             <div class="card">
                 <h2>Admin Panel</h2>
                 <div class="admin-nav">
                     <button class="btn" onclick="showAdminSubpage('user-management')">Benutzerverwaltung</button>
                     <button class="btn" onclick="showAdminSubpage('transaction-approval')">Transaktionsfreigabe</button>
-                    <button class="btn" onclick="showAdminSubpage('analytics')">Analyse-Dashboard</button>
                 </div>
 
                 <div id="user-management" class="admin-subpage active">
@@ -596,27 +572,8 @@
                 </div>
 
                 <div id="transaction-approval" class="admin-subpage hidden">
-                    <h3>Transaktionsfreigabe</h3>
+                    <h3>Ausstehende Transaktionen</h3>
                     <ul id="admin-transaction-list" class="admin-list"></ul>
-                </div>
-
-                <div id="analytics" class="admin-subpage hidden">
-                    <h3>Finanzanalyse</h3>
-                    <canvas id="balanceChart" width="400" height="200"></canvas>
-                    <div class="grid-container" style="margin-top: 2rem;">
-                        <div class="card">
-                            <h4>Total Users</h4>
-                            <p id="totalUsers"></p>
-                        </div>
-                        <div class="card">
-                            <h4>Total Transfers</h4>
-                            <p id="totalTransfers"></p>
-                        </div>
-                        <div class="card">
-                            <h4>Pending Loans</h4>
-                            <p id="pendingLoans"></p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
@@ -645,6 +602,23 @@
         </div>
     </div>
     
+    <div id="transfer-initiated-modal" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('transfer-initiated-modal')">&times;</button>
+            <i class="fas fa-check-circle" style="color: #28a745; font-size: 3rem; margin-bottom: 1rem;"></i>
+            <h2>Überweisung gestartet</h2>
+            <p>Ihre Überweisung wurde erfolgreich in Auftrag gegeben und wird verarbeitet.</p>
+        </div>
+    </div>
+    
+    <div id="transfer-notification-modal" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('transfer-notification-modal')">&times;</button>
+            <h2 id="transfer-notification-title"></h2>
+            <p id="transfer-notification-message"></p>
+        </div>
+    </div>
+
     <div id="admin-login-modal" class="modal-overlay">
         <div class="modal">
             <h2>Admin Login</h2>
@@ -654,11 +628,9 @@
             </form>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script>
         // --- Core Application Logic & State Management ---
-
         let currentUser = null;
         let adminMode = false;
         let db;
@@ -684,7 +656,6 @@
                     db = event.target.result;
                     db.createObjectStore('users', { keyPath: 'username' });
                     db.createObjectStore('transactions', { keyPath: 'id', autoIncrement: true });
-                    db.createObjectStore('loans', { keyPath: 'id', autoIncrement: true });
                 };
                 request.onsuccess = event => {
                     db = event.target.result;
@@ -744,6 +715,7 @@
             updateActiveNavLink(id);
             if (id === 'dashboard') renderDashboard();
             if (id === 'admin') renderAdminPanel();
+            if (id === 'investments') renderInvestmentPortfolio();
         }
 
         function updateActiveNavLink(id) {
@@ -779,7 +751,6 @@
         document.getElementById('loginForm').addEventListener('submit', handleLogin);
         document.getElementById('registerForm').addEventListener('submit', handleRegister);
         document.getElementById('2fa-form').addEventListener('submit', handle2FA);
-        document.getElementById('forgotPasswordForm').addEventListener('submit', handleForgotPassword);
 
         async function handleLogin(event) {
             event.preventDefault();
@@ -823,7 +794,6 @@
                 checkingBalance: 5000 + Math.random() * 5000,
                 savingsBalance: 10000 + Math.random() * 10000,
                 portfolio: [{ symbol: 'AAPL', quantity: 2 }, { symbol: 'TSLA', quantity: 1 }],
-                loans: [],
                 status: 'active'
             };
             const existingUser = await getData('users', newUser.username);
@@ -836,31 +806,11 @@
             showSection('login');
         }
 
-        async function handleForgotPassword(event) {
-            event.preventDefault();
-            const email = document.getElementById('forgotEmail').value;
-            const user = (await getAllData('users')).find(u => u.email === email);
-            if (user) {
-                alert('Passwort-Reset-Link wurde simuliert an Ihre E-Mail gesendet.');
-                showSection('login');
-            } else {
-                alert('E-Mail-Adresse nicht gefunden.');
-            }
-        }
-
         function handleLogout() {
             currentUser = null;
             adminMode = false;
             updateUI();
             showSection('home');
-        }
-
-        function simulateBiometricLogin() {
-            // Placeholder for real biometric API
-            alert('Biometrische Authentifizierungssimulation. Erfolgreich!');
-            // You would normally receive a token and log in here
-            // For now, let's just show the login form
-            showSection('login');
         }
 
         // --- Dashboard & Financial Logic ---
@@ -871,9 +821,7 @@
             document.getElementById('savingsBalance').textContent = `€ ${currentUser.savingsBalance.toFixed(2)}`;
             renderTransactions();
             renderTransferRecipients();
-            updateStockTicker();
             updateCurrencyExchange();
-            renderProfile();
         }
 
         async function renderTransactions() {
@@ -889,13 +837,14 @@
                 const isIncoming = t.toUser === currentUser.username;
                 const item = document.createElement('li');
                 item.className = 'transaction-item';
+                const statusClass = t.status === 'approved' ? 'positive' : 'negative';
                 item.innerHTML = `
                     <div>
                         <strong>${new Date(t.timestamp).toLocaleDateString()}</strong><br>
                         ${isIncoming ? `Von: ${t.fromUser}` : `An: ${t.toUser}`}<br>
-                        <small>${t.purpose}</small>
+                        <small>Status: ${t.status === 'pending' ? 'Ausstehend' : (t.status === 'approved' ? 'Erfolgreich' : 'Abgelehnt')}</small>
                     </div>
-                    <span class="transaction-amount ${isIncoming ? 'positive' : 'negative'}">
+                    <span class="transaction-amount ${statusClass}">
                         ${isIncoming ? '+' : '-'} €${Math.abs(t.amount).toFixed(2)}
                     </span>
                 `;
@@ -934,26 +883,42 @@
                 return;
             }
 
+            // Deduct funds immediately
             currentUser.checkingBalance -= amount;
-            recipient.checkingBalance += amount;
-            
             await saveData('users', currentUser);
-            await saveData('users', recipient);
-
+            
             const newTransaction = {
                 timestamp: Date.now(),
                 fromUser: currentUser.username,
                 toUser: recipient.username,
                 amount: amount,
                 purpose: purpose,
-                status: 'approved'
+                status: 'pending' // Set initial status to pending
             };
-            await saveData('transactions', newTransaction);
+            const transactionId = await saveData('transactions', newTransaction).then(() => newTransaction.id);
 
-            alert('Überweisung erfolgreich!');
-            showSection('dashboard');
+            openModal('transfer-initiated-modal');
+            
+            // Simulate processing time
+            setTimeout(async () => {
+                const updatedTransaction = await getData('transactions', transactionId);
+                if (updatedTransaction.status === 'approved') {
+                    recipient.checkingBalance += amount;
+                    await saveData('users', recipient);
+                }
+                
+                // Fire custom event to update UI
+                window.dispatchEvent(new CustomEvent('transactionUpdated'));
+                
+                document.getElementById('transfer-notification-title').textContent = `Überweisung ${updatedTransaction.status === 'approved' ? 'erfolgreich' : 'abgelehnt'}!`;
+                document.getElementById('transfer-notification-message').textContent = `Ihre Überweisung an ${recipient.firstName} ${recipient.lastName} wurde ${updatedTransaction.status === 'approved' ? 'verarbeitet.' : 'abgelehnt. Das Geld wurde zurückgebucht.'}`;
+                openModal('transfer-notification-modal');
+            }, 3000); // 3-second delay for processing
+            
+            // Re-render dashboard to show updated balance and pending transaction
+            renderDashboard();
         }
-        
+
         function downloadStatement() {
             // PDF generation simulation using a blob
             const statementContent = `
@@ -1043,25 +1008,6 @@
             renderDashboard();
         }
 
-        function updateStockTicker() {
-            const tickerElement = document.getElementById('stock-ticker');
-            let tickerText = '';
-            for (const [symbol, price] of Object.entries(MOCK_STOCKS)) {
-                tickerText += `${symbol}: €${price.toFixed(2)} | `;
-            }
-            tickerElement.textContent = tickerText;
-            setInterval(() => {
-                for (let stock in MOCK_STOCKS) {
-                    MOCK_STOCKS[stock] += (Math.random() - 0.5) * 2; // Simulate price change
-                    if (MOCK_STOCKS[stock] < 0) MOCK_STOCKS[stock] = 0.1;
-                }
-                updateStockTicker();
-                if (document.getElementById('investments').classList.contains('active')) {
-                    renderInvestmentPortfolio();
-                }
-            }, 5000);
-        }
-
         function updateCurrencyExchange() {
             const from = document.getElementById('currency-from');
             const to = document.getElementById('currency-to');
@@ -1078,50 +1024,13 @@
             calculate();
         }
 
-        // --- Loans Logic ---
-        document.getElementById('loan-application-form').addEventListener('submit', handleLoanApplication);
-
-        async function handleLoanApplication(event) {
-            event.preventDefault();
-            const amount = parseFloat(document.getElementById('loan-amount').value);
-            const term = parseInt(document.getElementById('loan-term').value);
-            const income = parseFloat(document.getElementById('loan-income').value);
-            
-            // Simple risk assessment
-            const riskScore = (income / amount) * 100;
-            const interestRate = riskScore < 10 ? 0.05 : (riskScore < 20 ? 0.08 : 0.12);
-            const monthlyPayment = (amount * (1 + interestRate)) / term;
-
-            const resultDiv = document.getElementById('loan-result');
-            resultDiv.innerHTML = `
-                <h4>Kreditberechnung</h4>
-                <p>Monatliche Rate: €${monthlyPayment.toFixed(2)}</p>
-                <p>Gesamtzinsen: €${(amount * interestRate).toFixed(2)}</p>
-                <p>Genehmigungsstatus: <span style="color: green;">Automatisch genehmigt</span></p>
-            `;
-            
-            const newLoan = {
-                username: currentUser.username,
-                amount,
-                term,
-                income,
-                status: 'approved',
-                monthlyPayment
-            };
-            await saveData('loans', newLoan);
-            
-            alert('Ihr Kreditantrag wurde erfolgreich bearbeitet!');
-        }
-
         // --- Admin Panel Logic ---
         document.getElementById('main-logo').addEventListener('click', handleAdminLoginClick);
         document.getElementById('admin-login-form').addEventListener('submit', handleAdminLogin);
         
         function handleAdminLoginClick() {
             lastLogoClicks.push(Date.now());
-            if (lastLogoClicks.length > 3) {
-                lastLogoClicks.shift();
-            }
+            if (lastLogoClicks.length > 3) { lastLogoClicks.shift(); }
             if (lastLogoClicks.length === 3 && (lastLogoClicks[2] - lastLogoClicks[0]) < 1000) {
                 openModal('admin-login-modal');
             }
@@ -1143,13 +1052,9 @@
         }
 
         async function renderAdminPanel() {
-            if (!adminMode) {
-                showSection('home');
-                return;
-            }
+            if (!adminMode) { showSection('home'); return; }
             renderAdminUsers();
             renderAdminTransactions();
-            renderAnalytics();
         }
 
         function showAdminSubpage(id) {
@@ -1213,7 +1118,7 @@
                         <strong>Von:</strong> ${t.fromUser}<br>
                         <strong>An:</strong> ${t.toUser}<br>
                         <strong>Betrag:</strong> €${t.amount.toFixed(2)}<br>
-                        <small>${t.purpose}</small>
+                        <small>Zweck: ${t.purpose}</small>
                     </div>
                     <div class="admin-actions">
                         <button onclick="approveTransaction(${t.id})" class="btn btn-secondary">Freigeben</button>
@@ -1230,38 +1135,21 @@
             await saveData('transactions', transaction);
             alert('Transaktion freigegeben.');
             renderAdminTransactions();
+            window.dispatchEvent(new CustomEvent('transactionUpdated'));
         }
         
         async function rejectTransaction(id) {
             const transaction = await getData('transactions', id);
-            // In a real app, reverse the transfer
-            await deleteData('transactions', id);
-            alert('Transaktion abgelehnt.');
+            const fromUser = await getData('users', transaction.fromUser);
+            if (fromUser) {
+                fromUser.checkingBalance += transaction.amount;
+                await saveData('users', fromUser);
+            }
+            transaction.status = 'rejected';
+            await saveData('transactions', transaction);
+            alert('Transaktion abgelehnt. Geld wurde zurückgebucht.');
             renderAdminTransactions();
-        }
-
-        let balanceChart;
-        async function renderAnalytics() {
-            const allUsers = await getAllData('users');
-            const allTransactions = await getAllData('transactions');
-            const allLoans = await getAllData('loans');
-            
-            document.getElementById('totalUsers').textContent = allUsers.length;
-            document.getElementById('totalTransfers').textContent = allTransactions.length;
-            document.getElementById('pendingLoans').textContent = allLoans.filter(l => l.status === 'pending').length;
-
-            const totalBalances = allUsers.reduce((sum, user) => sum + user.checkingBalance + user.savingsBalance, 0);
-            const data = {
-                labels: ['Total Balance'],
-                datasets: [{
-                    label: 'Total assets',
-                    data: [totalBalances],
-                    backgroundColor: 'rgba(0, 123, 255, 0.6)'
-                }]
-            };
-            if (balanceChart) balanceChart.destroy();
-            const ctx = document.getElementById('balanceChart').getContext('2d');
-            balanceChart = new Chart(ctx, { type: 'bar', data: data, options: { responsive: true, scales: { y: { beginAtZero: true } } } });
+            window.dispatchEvent(new CustomEvent('transactionUpdated'));
         }
 
         // --- Helper Functions ---
@@ -1287,12 +1175,12 @@
             document.getElementById(id).style.display = 'none';
         }
         
-        function renderProfile() {
-            if (!currentUser) return;
-            document.getElementById('profileUsername').textContent = currentUser.username;
-            document.getElementById('profileName').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
-            document.getElementById('profileEmail').textContent = currentUser.email;
-        }
+        // --- Event Listener for real-time updates ---
+        window.addEventListener('transactionUpdated', () => {
+            if (document.getElementById('dashboard').classList.contains('active')) {
+                renderDashboard();
+            }
+        });
 
         // --- Initialisation ---
         async function init() {
@@ -1306,15 +1194,15 @@
             const initialUsers = await getAllData('users');
             if (initialUsers.length === 0) {
                 const mockUsers = [
-                    { username: 'max.mustermann', password: 'password', firstName: 'Max', lastName: 'Mustermann', email: 'max@example.com', role: 'user', checkingBalance: 5234.56, savingsBalance: 12456.78, portfolio: [{ symbol: 'AAPL', quantity: 5 }], loans: [], status: 'active' },
-                    { username: 'lisa.schmidt', password: 'password', firstName: 'Lisa', lastName: 'Schmidt', email: 'lisa@example.com', role: 'user', checkingBalance: 8765.43, savingsBalance: 21987.65, portfolio: [{ symbol: 'TSLA', quantity: 3 }], loans: [], status: 'active' }
+                    { username: 'max.mustermann', password: 'password', firstName: 'Max', lastName: 'Mustermann', email: 'max@example.com', role: 'user', checkingBalance: 5234.56, savingsBalance: 12456.78, portfolio: [{ symbol: 'AAPL', quantity: 5 }], status: 'active' },
+                    { username: 'lisa.schmidt', password: 'password', firstName: 'Lisa', lastName: 'Schmidt', email: 'lisa@example.com', role: 'user', checkingBalance: 8765.43, savingsBalance: 21987.65, portfolio: [{ symbol: 'TSLA', quantity: 3 }], status: 'active' }
                 ];
                 for (const user of mockUsers) {
                     await saveData('users', user);
                 }
                 const mockTransactions = [
-                    { id: Date.now(), fromUser: 'max.mustermann', toUser: 'lisa.schmidt', amount: 50, purpose: 'Dinner', status: 'approved', timestamp: Date.now() },
-                    { id: Date.now() + 1, fromUser: 'lisa.schmidt', toUser: 'max.mustermann', amount: 25, purpose: 'Coffee', status: 'approved', timestamp: Date.now() + 1000 }
+                    { id: 1, fromUser: 'max.mustermann', toUser: 'lisa.schmidt', amount: 50, purpose: 'Dinner', status: 'pending', timestamp: Date.now() },
+                    { id: 2, fromUser: 'lisa.schmidt', toUser: 'max.mustermann', amount: 25, purpose: 'Coffee', status: 'approved', timestamp: Date.now() + 1000 }
                 ];
                 for (const transaction of mockTransactions) {
                     await saveData('transactions', transaction);
