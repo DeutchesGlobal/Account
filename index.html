@@ -3,21 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VR Bank Rhein-Neckar - Homepage</title>
+    <title>DeutscheGlobal Bank</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #004d40;
-            --secondary-color: #6a00ff;
+            --primary-color: #003366;
+            --secondary-color: #007bff;
             --text-color: #333;
-            --light-bg: #f4f7f6;
+            --bg-color: #f4f7f9;
             --card-bg: #fff;
-            --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --shadow-medium: 0 8px 12px rgba(0, 0, 0, 0.15);
-            --border-radius: 8px;
+            --border-color: #e0e6e9;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --font-family: 'Roboto', sans-serif;
+            --transition-speed: 0.3s ease;
+        }
+        body.dark-mode {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --text-color: #ecf0f1;
+            --bg-color: #222d3b;
+            --card-bg: #2d3b4b;
+            --border-color: #44586d;
         }
 
         * {
@@ -25,73 +34,68 @@
             margin: 0;
             padding: 0;
         }
-
+        html {
+            scroll-behavior: smooth;
+        }
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--light-bg);
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
         }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
         }
 
+        /* Navbar & Header */
         header {
             background-color: var(--card-bg);
-            box-shadow: var(--shadow-light);
-            padding: 1rem 0;
+            box-shadow: var(--shadow);
             position: sticky;
             top: 0;
             z-index: 1000;
+            padding: 1rem 0;
+            transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
         }
-
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 700;
             color: var(--primary-color);
             text-decoration: none;
+            transition: color var(--transition-speed);
         }
-
         .nav-links {
+            list-style: none;
             display: flex;
             gap: 2rem;
-            list-style: none;
         }
-
-        .nav-links a {
+        .nav-links a, .mobile-menu a {
             text-decoration: none;
             color: var(--text-color);
             font-weight: 500;
-            transition: color 0.3s ease;
+            transition: color var(--transition-speed);
         }
-
         .nav-links a:hover, .nav-links a.active {
             color: var(--secondary-color);
         }
-
         .cta-button {
             background-color: var(--secondary-color);
             color: #fff;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
+            padding: 0.6rem 1.2rem;
+            border-radius: 5px;
             text-decoration: none;
             font-weight: 500;
-            transition: background-color 0.3s ease;
+            transition: background-color var(--transition-speed);
         }
-
-        .cta-button:hover {
-            background-color: #5a00d9;
-        }
-
+        .cta-button:hover { background-color: #0056b3; }
         .login-btn, .mobile-menu-btn {
             background: none;
             border: none;
@@ -99,301 +103,209 @@
             font-size: 1.2rem;
             color: var(--primary-color);
             padding: 0.5rem;
+            transition: color var(--transition-speed);
         }
-
         .mobile-menu {
             display: none;
             flex-direction: column;
             gap: 1rem;
             padding: 1rem;
             background-color: var(--card-bg);
-            box-shadow: var(--shadow-light);
+            box-shadow: var(--shadow);
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            transition: all var(--transition-speed);
         }
+        .mobile-menu.active { display: flex; }
 
-        .mobile-menu a {
-            text-decoration: none;
-            color: var(--text-color);
-            font-weight: 500;
-            display: block;
-        }
-
-        main {
-            padding: 2rem 0;
-        }
-
+        /* General Layout & Sections */
+        main { padding: 2rem 0; }
         section {
             display: none;
+            animation: fadeIn 0.5s ease-in-out;
+            min-height: 70vh;
         }
-
-        section.active {
-            display: block;
-        }
-
-        h1, h2 {
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-
+        section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h1, h2, h3 { color: var(--primary-color); margin-bottom: 1rem; transition: color var(--transition-speed); }
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
         .hero {
             text-align: center;
             padding: 4rem 0;
             background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-light);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
             margin-bottom: 2rem;
+            transition: background-color var(--transition-speed);
         }
-
-        .hero h1 {
-            font-size: 2.5rem;
-        }
-
-        .hero p {
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .offers, .services {
-            padding: 2rem 0;
-        }
-
         .grid-container {
             display: grid;
             gap: 2rem;
             margin-top: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         }
-
-        .offer-card, .service-card {
+        .card, .form-container {
             background-color: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-light);
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .offer-card:hover, .service-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-medium);
-        }
-
-        .offer-card h3, .service-card h3 {
-            margin-bottom: 0.5rem;
-        }
-
-        .icon {
-            font-size: 3rem;
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-
-        .contact-info {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .contact-info p {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .login-page, .dashboard-page, .transfer-page, .register-page, .users-page {
-            max-width: 600px;
-            margin: 2rem auto;
             padding: 2rem;
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-light);
-            text-align: center;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            transition: background-color var(--transition-speed);
         }
+        .form-container { max-width: 500px; margin: 2rem auto; }
         
-        .dashboard-page, .transfer-page {
-            text-align: left;
-        }
-
-        .login-page form, .register-page form, .transfer-page form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .login-page input, .register-page input, .transfer-page input, .transfer-page select {
+        /* Forms & Buttons */
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        input, select, textarea {
+            width: 100%;
             padding: 0.8rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all var(--transition-speed);
         }
-
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--secondary-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); }
         .btn {
+            display: inline-block;
             background-color: var(--secondary-color);
             color: #fff;
-            padding: 0.8rem;
+            padding: 0.8rem 1.5rem;
             border: none;
-            border-radius: 20px;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: 500;
-            transition: background-color 0.3s ease;
+            transition: background-color var(--transition-speed), transform 0.1s ease;
         }
-
-        .btn:hover {
-            background-color: #5a00d9;
+        .btn:hover { background-color: #0056b3; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background-color: var(--secondary-color); }
+        .btn-secondary { background-color: var(--primary-color); }
+        
+        /* Dashboard & Financials */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
         }
+        @media (min-width: 768px) {
+            .dashboard-grid { grid-template-columns: 2fr 1fr; }
+        }
+        .balance-card, .transaction-card {
+            padding: 1.5rem;
+            border-radius: 10px;
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+            transition: background-color var(--transition-speed);
+        }
+        .transaction-list { list-style: none; margin-top: 1rem; }
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .transaction-item:last-child { border-bottom: none; }
+        .transaction-amount.positive { color: #28a745; font-weight: bold; }
+        .transaction-amount.negative { color: #dc3545; font-weight: bold; }
+        .stock-ticker {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            overflow: hidden;
+            white-space: nowrap;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+        }
+        .stock-ticker span {
+            display: inline-block;
+            animation: ticker 15s linear infinite;
+        }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-        .dashboard-summary {
+        /* Admin Panel */
+        .admin-section { padding-top: 2rem; }
+        .admin-nav {
             display: flex;
             gap: 1rem;
             margin-bottom: 2rem;
             flex-wrap: wrap;
         }
-
-        .balance-card {
-            background-color: var(--light-bg);
-            padding: 1.5rem;
-            border-radius: var(--border-radius);
-            flex: 1;
-        }
-
-        .transaction-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .transaction-item {
-            background-color: #fff;
+        .admin-nav .btn { padding: 0.6rem 1.2rem; }
+        .admin-list { list-style: none; }
+        .admin-list-item {
+            background-color: var(--card-bg);
             padding: 1rem;
-            border-radius: 4px;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 5px solid;
+            transition: background-color var(--transition-speed);
         }
+        .admin-actions button { margin-left: 0.5rem; }
 
-        .transaction-item.incoming {
-            border-left-color: #28a745;
-        }
-
-        .transaction-item.outgoing {
-            border-left-color: #dc3545;
-        }
-        
-        .users-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        
-        .users-list li {
-            background-color: var(--light-bg);
-            padding: 1rem;
-            border-radius: 4px;
-        }
-
-        footer {
-            background-color: var(--primary-color);
-            color: #fff;
-            padding: 2rem 0;
-            text-align: center;
-        }
-
-        .footer-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .footer-links a {
-            color: #fff;
-            margin: 0 10px;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: #ccc;
-        }
-
-        .social-icons {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .social-icons a {
-            color: #fff;
-            font-size: 1.5rem;
-        }
-
-        .overlay {
+        /* Modals & Overlays */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.6);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 1001;
+            z-index: 2000;
         }
-
         .modal {
-            background-color: white;
+            background-color: var(--card-bg);
             padding: 2rem;
-            border-radius: 8px;
-            text-align: center;
-            position: relative;
-            max-width: 400px;
+            border-radius: 10px;
+            max-width: 500px;
             width: 90%;
+            position: relative;
+            transition: background-color var(--transition-speed);
         }
-
         .modal-close {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
             background: none;
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
-            color: #888;
+            color: var(--text-color);
         }
 
-        @media (min-width: 768px) {
-            .mobile-menu-btn {
-                display: none;
-            }
-            .nav-links {
-                display: flex;
-            }
-            .grid-container {
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            }
+        /* Footer */
+        footer {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 2rem 0;
+            text-align: center;
+            transition: background-color var(--transition-speed);
         }
-
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .social-icons a { color: #fff; margin: 0 10px; font-size: 1.5rem; transition: color var(--transition-speed); }
+        .social-icons a:hover { color: var(--secondary-color); }
+        
+        /* Responsive */
         @media (max-width: 767px) {
-            .nav-links {
-                display: none;
-            }
-            .mobile-menu-btn {
-                display: block;
-            }
-            .navbar {
-                justify-content: space-between;
-            }
-            .login-btn, .register-link {
-                display: none;
-            }
-            .mobile-menu.active {
-                display: flex;
-            }
+            .nav-links { display: none; }
+            .mobile-menu-btn { display: block; }
+            .navbar { justify-content: space-between; }
+            .login-btn { display: none; }
+            .hero h1 { font-size: 2rem; }
         }
-
     </style>
 </head>
 <body>
@@ -401,34 +313,37 @@
     <header>
         <div class="container">
             <nav class="navbar">
-                <a href="#home" class="logo">VR Bank Rhein-Neckar</a>
+                <a href="#home" class="logo" id="main-logo">DeutscheGlobal Bank</a>
                 <ul class="nav-links">
-                    <li><a href="#home" class="active">Startseite</a></li>
-                    <li><a href="#about">Über Uns</a></li>
-                    <li><a href="#services">Dienstleistungen</a></li>
-                    <li><a href="#contact">Kontakt</a></li>
-                    <li><a href="#dashboard" class="user-link hidden">Dashboard</a></li>
-                    <li><a href="#transfer" class="user-link hidden">Überweisung</a></li>
-                    <li><a href="#users" class="user-link hidden">Benutzer</a></li>
-                    <li><a href="#logout" class="user-link hidden">Logout</a></li>
+                    <li><a href="#home" class="nav-link active">Startseite</a></li>
+                    <li><a href="#about" class="nav-link">Über Uns</a></li>
+                    <li><a href="#services" class="nav-link">Dienstleistungen</a></li>
+                    <li class="user-link hidden"><a href="#dashboard" class="nav-link">Dashboard</a></li>
+                    <li class="user-link hidden"><a href="#transfer" class="nav-link">Überweisung</a></li>
+                    <li class="user-link hidden"><a href="#investments" class="nav-link">Investitionen</a></li>
+                    <li class="user-link hidden"><a href="#loans" class="nav-link">Kredite</a></li>
+                    <li class="admin-link hidden"><a href="#admin" class="nav-link">Admin-Panel</a></li>
+                    <li class="user-link hidden"><a href="#profile" class="nav-link">Profil</a></li>
                 </ul>
-                <div>
+                <div class="nav-actions">
+                    <button id="theme-toggle" class="btn-icon"><i class="fas fa-moon"></i></button>
                     <button class="login-btn" onclick="showSection('login')">Login</button>
-                    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
-                        <i class="fas fa-bars"></i>
-                    </button>
+                    <button class="user-link hidden btn-primary" onclick="handleLogout()">Logout</button>
+                    <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
                 </div>
             </nav>
             <nav class="mobile-menu" id="mobile-menu">
                 <a href="#home" onclick="showSection('home'); toggleMobileMenu()">Startseite</a>
                 <a href="#about" onclick="showSection('about'); toggleMobileMenu()">Über Uns</a>
                 <a href="#services" onclick="showSection('services'); toggleMobileMenu()">Dienstleistungen</a>
-                <a href="#contact" onclick="showSection('contact'); toggleMobileMenu()">Kontakt</a>
+                <a href="#login" onclick="showSection('login'); toggleMobileMenu()">Login</a>
                 <a href="#dashboard" class="user-link hidden" onclick="showSection('dashboard'); toggleMobileMenu()">Dashboard</a>
                 <a href="#transfer" class="user-link hidden" onclick="showSection('transfer'); toggleMobileMenu()">Überweisung</a>
-                <a href="#users" class="user-link hidden" onclick="showSection('users'); toggleMobileMenu()">Benutzer</a>
-                <a href="#logout" class="user-link hidden" onclick="handleLogout(); toggleMobileMenu()">Logout</a>
-                <a href="#login" onclick="showSection('login'); toggleMobileMenu()">Login</a>
+                <a href="#investments" class="user-link hidden" onclick="showSection('investments'); toggleMobileMenu()">Investitionen</a>
+                <a href="#loans" class="user-link hidden" onclick="showSection('loans'); toggleMobileMenu()">Kredite</a>
+                <a href="#admin" class="admin-link hidden" onclick="showSection('admin'); toggleMobileMenu()">Admin-Panel</a>
+                <a href="#profile" class="user-link hidden" onclick="showSection('profile'); toggleMobileMenu()">Profil</a>
+                <a href="#" class="user-link hidden" onclick="handleLogout(); toggleMobileMenu()">Logout</a>
             </nav>
         </div>
     </header>
@@ -437,227 +352,402 @@
         
         <section id="home" class="active">
             <div class="hero">
-                <h1>Ihre VR Bank vor Ort</h1>
+                <h1>Ihre globale Bank vor Ort.</h1>
                 <p>Digital. Sicher. Immer für Sie da.</p>
                 <a href="#login" class="cta-button">Jetzt anmelden</a>
             </div>
-            <div class="offers">
-                <h2>Unsere Top-Angebote</h2>
-                <div class="grid-container">
-                    <div class="offer-card">
-                        <i class="fas fa-hand-holding-dollar icon"></i>
-                        <h3>Günstige Kredite</h3>
-                        <p>Finden Sie den passenden Kredit für Ihre Pläne.</p>
-                    </div>
-                    <div class="offer-card">
-                        <i class="fas fa-piggy-bank icon"></i>
-                        <h3>Sparpläne</h3>
-                        <p>Erreichen Sie Ihre finanziellen Ziele mit unseren flexiblen Sparmodellen.</p>
-                    </div>
-                    <div class="offer-card">
-                        <i class="fas fa-house-chimney icon"></i>
-                        <h3>Immobilienfinanzierung</h3>
-                        <p>Wir helfen Ihnen, den Traum vom Eigenheim zu verwirklichen.</p>
-                    </div>
+            <div class="grid-container">
+                <div class="card">
+                    <h3>Sicher und Vertrauenswürdig</h3>
+                    <p>Mit modernsten Sicherheitsstandards schützen wir Ihr Vermögen und Ihre Daten.</p>
+                </div>
+                <div class="card">
+                    <h3>Flexible Kredite</h3>
+                    <p>Erfüllen Sie sich Ihre Träume mit unseren maßgeschneiderten Finanzierungslösungen.</p>
+                </div>
+                <div class="card">
+                    <h3>Intelligente Investitionen</h3>
+                    <p>Maximieren Sie Ihr Vermögen mit unseren KI-gestützten Anlagestrategien.</p>
                 </div>
             </div>
         </section>
 
         <section id="about">
             <div class="hero">
-                <h1>Über Uns</h1>
-                <p>Die VR Bank Rhein-Neckar eG ist Ihre regionale Genossenschaftsbank. Wir sind fest in der Region verwurzelt und legen Wert auf eine partnerschaftliche Zusammenarbeit mit unseren Kunden.</p>
+                <h1>Über DeutscheGlobal Bank</h1>
+                <p>Wir sind Ihr Partner für eine sichere finanzielle Zukunft.</p>
             </div>
             <div class="grid-container">
-                <div class="offer-card">
-                    <i class="fas fa-users icon"></i>
-                    <h3>Gemeinsam stark</h3>
-                    <p>Als Genossenschaftsbank gehören wir unseren Mitgliedern und richten unser Handeln nach deren Interessen aus.</p>
+                <div class="card">
+                    <h3>Unsere Mission</h3>
+                    <p>Wir streben danach, die komplexen Aspekte des Bankwesens zu vereinfachen und unseren Kunden intuitive, sichere und leistungsstarke Finanzlösungen anzubieten.</p>
                 </div>
-                <div class="offer-card">
-                    <i class="fas fa-location-dot icon"></i>
-                    <h3>Regional verankert</h3>
-                    <p>Wir fördern die Wirtschaft, Vereine und soziale Projekte in unserer Region.</p>
-                </div>
-                <div class="offer-card">
-                    <i class="fas fa-leaf icon"></i>
-                    <h3>Nachhaltigkeit</h3>
-                    <p>Nachhaltigkeit ist für uns eine zentrale Herausforderung und ein wichtiger Teil unserer Strategie.</p>
+                <div class="card">
+                    <h3>Unsere Geschichte</h3>
+                    <p>Gegründet 1999, haben wir uns von einer regionalen Bank zu einem globalen Finanzinstitut entwickelt, das seinen genossenschaftlichen Werten treu bleibt.</p>
                 </div>
             </div>
         </section>
-
+        
         <section id="services">
             <h2>Unsere Dienstleistungen</h2>
             <div class="grid-container">
-                <div class="service-card">
-                    <i class="fas fa-credit-card icon"></i>
-                    <h3>Konten & Karten</h3>
-                    <p>Passende Konten und Kreditkarten für jeden Bedarf.</p>
+                <div class="card">
+                    <h3>Konten & Zahlungen</h3>
+                    <p>Globale Überweisungen, Echtzeit-Zahlungen und flexible Konten.</p>
                 </div>
-                <div class="service-card">
-                    <i class="fas fa-hand-holding-dollar icon"></i>
-                    <h3>Finanzierungen</h3>
-                    <p>Von Baufinanzierung bis zum Privatkredit - wir sind Ihr Partner.</p>
+                <div class="card">
+                    <h3>Kredite & Finanzierung</h3>
+                    <p>Privatkredite, Baufinanzierung und Unternehmenskredite.</p>
                 </div>
-                <div class="service-card">
-                    <i class="fas fa-chart-line icon"></i>
-                    <h3>Anlagen & Sparen</h3>
-                    <p>Profitieren Sie von unseren renditestarken Anlagemodellen.</p>
+                <div class="card">
+                    <h3>Anlagen & Investitionen</h3>
+                    <p>Aktienhandel, Fonds und personalisierte Portfolios.</p>
                 </div>
-                <div class="service-card">
-                    <i class="fas fa-umbrella icon"></i>
-                    <h3>Versicherungen</h3>
-                    <p>Umfassender Schutz für Ihr Hab und Gut.</p>
+                <div class="card">
+                    <h3>Währungsumtausch</h3>
+                    <p>Tauschen Sie Währungen zu aktuellen Echtzeit-Kursen.</p>
                 </div>
             </div>
         </section>
 
-        <section id="contact">
-            <h2>Kontakt</h2>
-            <p>Wir sind für Sie da. Kontaktieren Sie uns für eine persönliche Beratung.</p>
-            <div class="contact-info">
-                <p><i class="fas fa-phone"></i> +49 (0) 621 123456</p>
-                <p><i class="fas fa-envelope"></i> info@vrbank.de</p>
-                <p><i class="fas fa-location-dot"></i> Musterstraße 1, 68161 Mannheim</p>
-            </div>
-        </section>
-
-        <section id="login" class="login-page">
+        <section id="login" class="form-container">
             <h2>Login</h2>
             <form id="loginForm">
-                <input type="text" id="loginUsername" placeholder="Benutzername" required>
-                <input type="password" id="loginPassword" placeholder="Passwort" required>
-                <button type="submit" class="btn">Anmelden</button>
+                <div class="form-group">
+                    <label for="loginUsername">Benutzername</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Passwort</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Anmelden</button>
             </form>
-            <p>Noch kein Konto? <a href="#register" onclick="showSection('register')">Jetzt registrieren</a></p>
+            <p style="margin-top: 1rem;">Neu hier? <a href="#register" onclick="showSection('register')">Jetzt registrieren</a></p>
+            <p><a href="#forgot-password" onclick="showSection('forgot-password')">Passwort vergessen?</a></p>
+            <button class="btn btn-secondary" onclick="simulateBiometricLogin()">Biometrischer Login</button>
         </section>
 
-        <section id="register" class="register-page">
+        <section id="register" class="form-container">
             <h2>Registrierung</h2>
             <form id="registerForm">
-                <input type="text" id="regFirstName" placeholder="Vorname" required>
-                <input type="text" id="regLastName" placeholder="Nachname" required>
-                <input type="email" id="regEmail" placeholder="E-Mail" required>
-                <input type="text" id="regUsername" placeholder="Benutzername" required>
-                <input type="password" id="regPassword" placeholder="Passwort" required>
-                <button type="submit" class="btn">Registrieren</button>
+                <div class="form-group"><label for="regFirstName">Vorname</label><input type="text" id="regFirstName" required></div>
+                <div class="form-group"><label for="regLastName">Nachname</label><input type="text" id="regLastName" required></div>
+                <div class="form-group"><label for="regUsername">Benutzername</label><input type="text" id="regUsername" required></div>
+                <div class="form-group"><label for="regEmail">E-Mail</label><input type="email" id="regEmail" required></div>
+                <div class="form-group"><label for="regPassword">Passwort</label><input type="password" id="regPassword" required></div>
+                <button type="submit" class="btn btn-primary">Registrieren</button>
+            </form>
+        </section>
+        
+        <section id="forgot-password" class="form-container">
+            <h2>Passwort zurücksetzen</h2>
+            <form id="forgotPasswordForm">
+                <div class="form-group">
+                    <label for="forgotEmail">E-Mail</label>
+                    <input type="email" id="forgotEmail" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Link senden</button>
             </form>
         </section>
 
-        <section id="dashboard" class="dashboard-page user-section">
-            <h2 id="welcomeMessage">Hallo, [Benutzername]!</h2>
-            <div class="dashboard-summary">
-                <div class="balance-card">
-                    <h3>Girokonto</h3>
-                    <p id="checkingBalance">€ 0.00</p>
+        <section id="dashboard" class="user-section">
+            <h2 id="welcomeMessage">Willkommen, [Benutzername]!</h2>
+            <div class="stock-ticker" id="stock-ticker"></div>
+            <div class="dashboard-grid">
+                <div>
+                    <div class="card mb-2">
+                        <h3>Kontostände</h3>
+                        <p><strong>Girokonto:</strong> <span id="checkingBalance">€ 0.00</span></p>
+                        <p><strong>Sparkonto:</strong> <span id="savingsBalance">€ 0.00</span></p>
+                    </div>
+                    <div class="card">
+                        <h3>Letzte Transaktionen</h3>
+                        <ul id="transactionList" class="transaction-list"></ul>
+                        <button class="btn btn-secondary mt-2" onclick="downloadStatement()">Kontoauszug (PDF)</button>
+                    </div>
                 </div>
-                <div class="balance-card">
-                    <h3>Sparkonto</h3>
-                    <p id="savingsBalance">€ 0.00</p>
+                <div>
+                    <div class="card mb-2">
+                        <h3>Währungsumtausch</h3>
+                        <div class="form-group">
+                            <label for="currency-from">Von</label>
+                            <select id="currency-from">
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="GBP">GBP - Britisches Pfund</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="currency-to">Nach</label>
+                            <select id="currency-to">
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="GBP">GBP - Britisches Pfund</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="currency-amount">Betrag</label>
+                            <input type="number" id="currency-amount" value="100">
+                        </div>
+                        <p>Umgetauschtes Ergebnis: <span id="exchange-result"></span></p>
+                    </div>
                 </div>
             </div>
-            <h3>Letzte Transaktionen</h3>
-            <ul id="transactionList" class="transaction-list">
-                </ul>
-            <button class="btn" style="margin-top: 2rem;" onclick="downloadStatement()">Kontoauszug herunterladen</button>
         </section>
 
-        <section id="transfer" class="transfer-page user-section">
-            <h2>Überweisung</h2>
-            <form id="transferForm">
-                <label for="transferRecipient">Empfänger:</label>
-                <select id="transferRecipient" required>
-                    <option value="">Benutzer wählen...</option>
-                </select>
-                <label for="transferAmount">Betrag:</label>
-                <input type="number" id="transferAmount" min="0.01" step="0.01" placeholder="Betrag in €" required>
-                <label for="transferPurpose">Verwendungszweck:</label>
-                <input type="text" id="transferPurpose" placeholder="Verwendungszweck" required>
-                <button type="submit" class="btn">Geld senden</button>
-            </form>
-            <button class="btn" style="margin-top: 1rem;" onclick="showRequestModal()">Geld anfordern</button>
+        <section id="transfer" class="user-section">
+            <div class="form-container">
+                <h2>Überweisung</h2>
+                <form id="transferForm">
+                    <div class="form-group">
+                        <label for="transferRecipient">Empfänger</label>
+                        <select id="transferRecipient" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="transferAmount">Betrag (€)</label>
+                        <input type="number" id="transferAmount" min="0.01" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="transferPurpose">Verwendungszweck</label>
+                        <input type="text" id="transferPurpose" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Überweisen</button>
+                </form>
+            </div>
         </section>
 
-        <section id="users" class="users-page user-section">
-            <h2>Alle Benutzer</h2>
-            <ul id="userList" class="users-list">
-                </ul>
+        <section id="investments" class="user-section">
+            <div class="card">
+                <h2>Mein Investment-Portfolio</h2>
+                <div class="grid-container" id="portfolio-grid"></div>
+            </div>
+            <div class="card mt-2">
+                <h3>Aktienhandel simulieren</h3>
+                <form id="stock-trade-form">
+                    <div class="form-group">
+                        <label for="stock-symbol">Aktiensymbol</label>
+                        <select id="stock-symbol">
+                            <option value="AAPL">Apple (AAPL)</option>
+                            <option value="TSLA">Tesla (TSLA)</option>
+                            <option value="GOOGL">Google (GOOGL)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="trade-type">Handelsart</label>
+                        <select id="trade-type">
+                            <option value="buy">Kaufen</option>
+                            <option value="sell">Verkaufen</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="trade-quantity">Anzahl</label>
+                        <input type="number" id="trade-quantity" min="1" value="1">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Handel ausführen</button>
+                </form>
+            </div>
+        </section>
+        
+        <section id="loans" class="user-section">
+            <div class="card">
+                <h2>Kredit beantragen</h2>
+                <form id="loan-application-form">
+                    <div class="form-group">
+                        <label for="loan-amount">Kreditbetrag (€)</label>
+                        <input type="number" id="loan-amount" min="1000" step="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loan-term">Laufzeit (Monate)</label>
+                        <input type="number" id="loan-term" min="12" max="120" step="12" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loan-income">Monatliches Einkommen (€)</label>
+                        <input type="number" id="loan-income" min="0" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Berechnen & Beantragen</button>
+                </form>
+                <div id="loan-result" style="margin-top: 1rem;"></div>
+            </div>
+        </section>
+
+        <section id="profile" class="user-section">
+            <div class="card">
+                <h2>Mein Profil</h2>
+                <p><strong>Benutzername:</strong> <span id="profileUsername"></span></p>
+                <p><strong>Name:</strong> <span id="profileName"></span></p>
+                <p><strong>E-Mail:</strong> <span id="profileEmail"></span></p>
+            </div>
+        </section>
+
+        <section id="admin" class="admin-section">
+            <div class="card">
+                <h2>Admin Panel</h2>
+                <div class="admin-nav">
+                    <button class="btn" onclick="showAdminSubpage('user-management')">Benutzerverwaltung</button>
+                    <button class="btn" onclick="showAdminSubpage('transaction-approval')">Transaktionsfreigabe</button>
+                    <button class="btn" onclick="showAdminSubpage('analytics')">Analyse-Dashboard</button>
+                </div>
+
+                <div id="user-management" class="admin-subpage active">
+                    <h3>Benutzerverwaltung</h3>
+                    <ul id="admin-user-list" class="admin-list"></ul>
+                </div>
+
+                <div id="transaction-approval" class="admin-subpage hidden">
+                    <h3>Transaktionsfreigabe</h3>
+                    <ul id="admin-transaction-list" class="admin-list"></ul>
+                </div>
+
+                <div id="analytics" class="admin-subpage hidden">
+                    <h3>Finanzanalyse</h3>
+                    <canvas id="balanceChart" width="400" height="200"></canvas>
+                    <div class="grid-container" style="margin-top: 2rem;">
+                        <div class="card">
+                            <h4>Total Users</h4>
+                            <p id="totalUsers"></p>
+                        </div>
+                        <div class="card">
+                            <h4>Total Transfers</h4>
+                            <p id="totalTransfers"></p>
+                        </div>
+                        <div class="card">
+                            <h4>Pending Loans</h4>
+                            <p id="pendingLoans"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
     </main>
 
     <footer>
         <div class="container footer-content">
-            <p>&copy; 2023 VR Bank Rhein-Neckar eG. Alle Rechte vorbehalten.</p>
-            <div class="footer-links">
-                <a href="#">Impressum</a>
-                <a href="#">Datenschutz</a>
-                <a href="#">AGB</a>
-            </div>
             <div class="social-icons">
-                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
             </div>
+            <p>&copy; 2023 DeutscheGlobal Bank. Alle Rechte vorbehalten.</p>
         </div>
     </footer>
 
-    <div id="requestModal" class="overlay">
+    <div id="2fa-modal" class="modal-overlay">
         <div class="modal">
-            <button class="modal-close" onclick="closeModal('requestModal')">&times;</button>
-            <h2>Geld anfordern</h2>
-            <form id="requestForm">
-                <label for="requestSender">Sender:</label>
-                <select id="requestSender" required>
-                    <option value="">Benutzer wählen...</option>
-                </select>
-                <label for="requestAmount">Betrag:</label>
-                <input type="number" id="requestAmount" min="0.01" step="0.01" placeholder="Betrag in €" required>
-                <button type="submit" class="btn">Anfrage senden</button>
+            <h2>Zwei-Faktor-Authentifizierung</h2>
+            <p>Geben Sie den Code ein, der an Ihre E-Mail gesendet wurde.</p>
+            <form id="2fa-form">
+                <div class="form-group"><input type="text" id="2fa-code" required></div>
+                <button type="submit" class="btn btn-primary">Bestätigen</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="admin-login-modal" class="modal-overlay">
+        <div class="modal">
+            <h2>Admin Login</h2>
+            <form id="admin-login-form">
+                <div class="form-group"><label for="admin-password">Passwort</label><input type="password" id="admin-password" required></div>
+                <button type="submit" class="btn btn-primary">Anmelden</button>
             </form>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const sections = document.querySelectorAll('section');
-        const userLinks = document.querySelectorAll('.user-link');
-        const loginBtn = document.querySelector('.login-btn');
+        // --- Core Application Logic & State Management ---
+
         let currentUser = null;
-        let users = [];
-        let allTransactions = [];
+        let adminMode = false;
+        let db;
+        let lastLogoClicks = [];
 
-        // Pre-populate with some initial users and transactions for demonstration
-        if (localStorage.getItem('users')) {
-            users = JSON.parse(localStorage.getItem('users'));
-        } else {
-            users = [
-                { username: 'max.mustermann', password: 'password123', firstName: 'Max', lastName: 'Mustermann', email: 'max@example.com', checkingBalance: 5000, savingsBalance: 15000 },
-                { username: 'lisa.muster', password: 'password456', firstName: 'Lisa', lastName: 'Muster', email: 'lisa@example.com', checkingBalance: 8000, savingsBalance: 20000 }
-            ];
-            localStorage.setItem('users', JSON.stringify(users));
-        }
+        // Mock data and API simulations
+        const MOCK_STOCKS = { 'AAPL': 175.24, 'TSLA': 225.89, 'GOOGL': 135.50 };
+        const MOCK_EXCHANGE_RATES = { 'EUR': { 'USD': 1.09, 'GBP': 0.86 }, 'USD': { 'EUR': 0.92, 'GBP': 0.79 }, 'GBP': { 'EUR': 1.16, 'USD': 1.27 } };
 
-        if (localStorage.getItem('transactions')) {
-            allTransactions = JSON.parse(localStorage.getItem('transactions'));
-        } else {
-            allTransactions = [
-                { id: Date.now(), fromUser: 'max.mustermann', toUser: 'lisa.muster', amount: 50, purpose: 'Dinner', date: new Date().toISOString() },
-                { id: Date.now() + 1, fromUser: 'lisa.muster', toUser: 'max.mustermann', amount: 25, purpose: 'Coffee', date: new Date().toISOString() }
-            ];
-            localStorage.setItem('transactions', JSON.stringify(allTransactions));
-        }
+        // DOM Elements
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const userLinks = document.querySelectorAll('.user-link');
+        const adminLinks = document.querySelectorAll('.admin-link');
+        const adminSubpages = document.querySelectorAll('.admin-subpage');
+        const themeToggleBtn = document.getElementById('theme-toggle');
 
-        function showSection(id) {
-            sections.forEach(section => {
-                section.classList.remove('active');
+        // --- Database & State Management (IndexedDB Simulation) ---
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('DeutscheGlobalBankDB', 1);
+                request.onupgradeneeded = event => {
+                    db = event.target.result;
+                    db.createObjectStore('users', { keyPath: 'username' });
+                    db.createObjectStore('transactions', { keyPath: 'id', autoIncrement: true });
+                    db.createObjectStore('loans', { keyPath: 'id', autoIncrement: true });
+                };
+                request.onsuccess = event => {
+                    db = event.target.result;
+                    resolve();
+                };
+                request.onerror = event => {
+                    console.error("IndexedDB error:", event.target.error);
+                    reject(event.target.error);
+                };
             });
+        }
+
+        async function saveData(storeName, data) {
+            const tx = db.transaction(storeName, 'readwrite');
+            const store = tx.objectStore(storeName);
+            return new Promise((resolve, reject) => {
+                const request = store.put(data);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getData(storeName, key) {
+            const tx = db.transaction(storeName, 'readonly');
+            const store = tx.objectStore(storeName);
+            return new Promise((resolve, reject) => {
+                const request = store.get(key);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getAllData(storeName) {
+            const tx = db.transaction(storeName, 'readonly');
+            const store = tx.objectStore(storeName);
+            return new Promise((resolve, reject) => {
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function deleteData(storeName, key) {
+            const tx = db.transaction(storeName, 'readwrite');
+            const store = tx.objectStore(storeName);
+            return new Promise((resolve, reject) => {
+                const request = store.delete(key);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+        
+        // --- UI & Navigation Logic ---
+        function showSection(id) {
+            sections.forEach(section => section.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             updateActiveNavLink(id);
+            if (id === 'dashboard') renderDashboard();
+            if (id === 'admin') renderAdminPanel();
         }
 
         function updateActiveNavLink(id) {
-            document.querySelectorAll('.nav-links a, .mobile-menu a').forEach(link => {
+            navLinks.forEach(link => {
                 link.classList.remove('active');
                 if (link.getAttribute('href') === `#${id}`) {
                     link.classList.add('active');
@@ -668,57 +758,166 @@
         function toggleMobileMenu() {
             document.getElementById('mobile-menu').classList.toggle('active');
         }
-
+        
+        // Dark/Light Mode
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            themeToggleBtn.innerHTML = isDarkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        });
+        
+        function loadTheme() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        }
+        
+        // --- Authentication & User Flow ---
         document.getElementById('loginForm').addEventListener('submit', handleLogin);
         document.getElementById('registerForm').addEventListener('submit', handleRegister);
-        document.getElementById('transferForm').addEventListener('submit', handleTransfer);
-        document.getElementById('requestForm').addEventListener('submit', handleRequest);
+        document.getElementById('2fa-form').addEventListener('submit', handle2FA);
+        document.getElementById('forgotPasswordForm').addEventListener('submit', handleForgotPassword);
 
-        function handleLogin(event) {
+        async function handleLogin(event) {
             event.preventDefault();
             const username = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
-            const user = users.find(u => u.username === username && u.password === password);
-            if (user) {
-                currentUser = user;
+            const user = await getData('users', username);
+            if (user && user.password === password) {
+                // Simulate 2FA
+                openModal('2fa-modal');
+                document.getElementById('2fa-form').dataset.username = username;
+                console.log(`Simulated 2FA code sent to ${user.email}. Code is 123456.`);
+            } else {
+                alert('Anmeldung fehlgeschlagen: Falscher Benutzername oder Passwort.');
+            }
+        }
+
+        async function handle2FA(event) {
+            event.preventDefault();
+            const code = document.getElementById('2fa-code').value;
+            const username = document.getElementById('2fa-form').dataset.username;
+            if (code === '123456') {
+                currentUser = await getData('users', username);
+                closeModal('2fa-modal');
                 updateUI();
                 showSection('dashboard');
                 alert('Anmeldung erfolgreich!');
             } else {
-                alert('Falscher Benutzername oder Passwort.');
+                alert('Ungültiger 2FA-Code.');
             }
         }
 
-        function handleRegister(event) {
+        async function handleRegister(event) {
             event.preventDefault();
-            const regUsername = document.getElementById('regUsername').value;
-            if (users.some(u => u.username === regUsername)) {
-                alert('Benutzername bereits vergeben.');
-                return;
-            }
             const newUser = {
-                username: regUsername,
-                password: document.getElementById('regPassword').value,
                 firstName: document.getElementById('regFirstName').value,
                 lastName: document.getElementById('regLastName').value,
+                username: document.getElementById('regUsername').value,
                 email: document.getElementById('regEmail').value,
-                checkingBalance: 0,
-                savingsBalance: 0
+                password: document.getElementById('regPassword').value, // Insecure, would be hashed in real app
+                role: 'user',
+                checkingBalance: 5000 + Math.random() * 5000,
+                savingsBalance: 10000 + Math.random() * 10000,
+                portfolio: [{ symbol: 'AAPL', quantity: 2 }, { symbol: 'TSLA', quantity: 1 }],
+                loans: [],
+                status: 'active'
             };
-            users.push(newUser);
-            localStorage.setItem('users', JSON.stringify(users));
+            const existingUser = await getData('users', newUser.username);
+            if (existingUser) {
+                alert('Registrierung fehlgeschlagen: Benutzername bereits vergeben.');
+                return;
+            }
+            await saveData('users', newUser);
             alert('Registrierung erfolgreich! Bitte melden Sie sich an.');
             showSection('login');
         }
 
-        function handleLogout() {
-            currentUser = null;
-            updateUI();
-            showSection('home');
-            alert('Sie wurden abgemeldet.');
+        async function handleForgotPassword(event) {
+            event.preventDefault();
+            const email = document.getElementById('forgotEmail').value;
+            const user = (await getAllData('users')).find(u => u.email === email);
+            if (user) {
+                alert('Passwort-Reset-Link wurde simuliert an Ihre E-Mail gesendet.');
+                showSection('login');
+            } else {
+                alert('E-Mail-Adresse nicht gefunden.');
+            }
         }
 
-        function handleTransfer(event) {
+        function handleLogout() {
+            currentUser = null;
+            adminMode = false;
+            updateUI();
+            showSection('home');
+        }
+
+        function simulateBiometricLogin() {
+            // Placeholder for real biometric API
+            alert('Biometrische Authentifizierungssimulation. Erfolgreich!');
+            // You would normally receive a token and log in here
+            // For now, let's just show the login form
+            showSection('login');
+        }
+
+        // --- Dashboard & Financial Logic ---
+        async function renderDashboard() {
+            if (!currentUser) return;
+            document.getElementById('welcomeMessage').textContent = `Willkommen, ${currentUser.firstName}!`;
+            document.getElementById('checkingBalance').textContent = `€ ${currentUser.checkingBalance.toFixed(2)}`;
+            document.getElementById('savingsBalance').textContent = `€ ${currentUser.savingsBalance.toFixed(2)}`;
+            renderTransactions();
+            renderTransferRecipients();
+            updateStockTicker();
+            updateCurrencyExchange();
+            renderProfile();
+        }
+
+        async function renderTransactions() {
+            const transactionList = document.getElementById('transactionList');
+            transactionList.innerHTML = '';
+            const allTransactions = await getAllData('transactions');
+            const userTransactions = allTransactions
+                .filter(t => t.fromUser === currentUser.username || t.toUser === currentUser.username)
+                .sort((a, b) => b.timestamp - a.timestamp)
+                .slice(0, 5);
+            
+            userTransactions.forEach(t => {
+                const isIncoming = t.toUser === currentUser.username;
+                const item = document.createElement('li');
+                item.className = 'transaction-item';
+                item.innerHTML = `
+                    <div>
+                        <strong>${new Date(t.timestamp).toLocaleDateString()}</strong><br>
+                        ${isIncoming ? `Von: ${t.fromUser}` : `An: ${t.toUser}`}<br>
+                        <small>${t.purpose}</small>
+                    </div>
+                    <span class="transaction-amount ${isIncoming ? 'positive' : 'negative'}">
+                        ${isIncoming ? '+' : '-'} €${Math.abs(t.amount).toFixed(2)}
+                    </span>
+                `;
+                transactionList.appendChild(item);
+            });
+        }
+        
+        async function renderTransferRecipients() {
+            const recipientSelect = document.getElementById('transferRecipient');
+            recipientSelect.innerHTML = '<option value="">Benutzer wählen...</option>';
+            const allUsers = await getAllData('users');
+            allUsers.filter(u => u.username !== currentUser.username).forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.username;
+                option.textContent = `${user.firstName} ${user.lastName} (${user.username})`;
+                recipientSelect.appendChild(option);
+            });
+        }
+
+        document.getElementById('transferForm').addEventListener('submit', handleTransfer);
+
+        async function handleTransfer(event) {
             event.preventDefault();
             const recipientUsername = document.getElementById('transferRecipient').value;
             const amount = parseFloat(document.getElementById('transferAmount').value);
@@ -728,185 +927,402 @@
                 alert('Ungültiger Betrag oder unzureichende Deckung.');
                 return;
             }
-
-            const recipient = users.find(u => u.username === recipientUsername);
-            if (recipient) {
-                currentUser.checkingBalance -= amount;
-                recipient.checkingBalance += amount;
-
-                const newTransaction = {
-                    id: Date.now(),
-                    fromUser: currentUser.username,
-                    toUser: recipient.username,
-                    amount: amount,
-                    purpose: purpose,
-                    date: new Date().toISOString()
-                };
-                allTransactions.push(newTransaction);
-                
-                saveData();
-                updateUI();
-                showSection('dashboard');
-                alert('Überweisung erfolgreich!');
-            } else {
+            
+            const recipient = await getData('users', recipientUsername);
+            if (!recipient) {
                 alert('Empfänger nicht gefunden.');
+                return;
+            }
+
+            currentUser.checkingBalance -= amount;
+            recipient.checkingBalance += amount;
+            
+            await saveData('users', currentUser);
+            await saveData('users', recipient);
+
+            const newTransaction = {
+                timestamp: Date.now(),
+                fromUser: currentUser.username,
+                toUser: recipient.username,
+                amount: amount,
+                purpose: purpose,
+                status: 'approved'
+            };
+            await saveData('transactions', newTransaction);
+
+            alert('Überweisung erfolgreich!');
+            showSection('dashboard');
+        }
+        
+        function downloadStatement() {
+            // PDF generation simulation using a blob
+            const statementContent = `
+                Kontoauszug - DeutscheGlobal Bank
+                Datum: ${new Date().toLocaleDateString('de-DE')}
+                Benutzer: ${currentUser.firstName} ${currentUser.lastName} (${currentUser.username})
+                Girokonto: €${currentUser.checkingBalance.toFixed(2)}
+                Sparkonto: €${currentUser.savingsBalance.toFixed(2)}
+                
+                --- Transaktionen ---
+                ... (Actual transaction data would be generated here) ...
+            `;
+            const blob = new Blob([statementContent], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Kontoauszug-${currentUser.username}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('Kontoauszug wird heruntergeladen...');
+        }
+        
+        // --- Investment Logic ---
+        async function renderInvestmentPortfolio() {
+            const portfolioGrid = document.getElementById('portfolio-grid');
+            portfolioGrid.innerHTML = '';
+            
+            if (!currentUser || !currentUser.portfolio) {
+                portfolioGrid.innerHTML = '<p>Keine Investitionen vorhanden.</p>';
+                return;
+            }
+            
+            currentUser.portfolio.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const currentPrice = MOCK_STOCKS[item.symbol] || 0;
+                card.innerHTML = `
+                    <h3>${item.symbol}</h3>
+                    <p>Menge: ${item.quantity}</p>
+                    <p>Aktueller Preis: €${currentPrice.toFixed(2)}</p>
+                    <p>Gesamtwert: €${(currentPrice * item.quantity).toFixed(2)}</p>
+                `;
+                portfolioGrid.appendChild(card);
+            });
+        }
+        
+        document.getElementById('stock-trade-form').addEventListener('submit', handleStockTrade);
+        
+        async function handleStockTrade(event) {
+            event.preventDefault();
+            const symbol = document.getElementById('stock-symbol').value;
+            const type = document.getElementById('trade-type').value;
+            const quantity = parseInt(document.getElementById('trade-quantity').value);
+            const stockPrice = MOCK_STOCKS[symbol];
+            const cost = stockPrice * quantity;
+
+            const existingPortfolioItem = currentUser.portfolio.find(item => item.symbol === symbol);
+            
+            if (type === 'buy') {
+                if (currentUser.checkingBalance < cost) {
+                    alert('Unzureichendes Guthaben für den Kauf.');
+                    return;
+                }
+                currentUser.checkingBalance -= cost;
+                if (existingPortfolioItem) {
+                    existingPortfolioItem.quantity += quantity;
+                } else {
+                    currentUser.portfolio.push({ symbol: symbol, quantity: quantity });
+                }
+            } else if (type === 'sell') {
+                if (!existingPortfolioItem || existingPortfolioItem.quantity < quantity) {
+                    alert('Unzureichende Aktienmenge für den Verkauf.');
+                    return;
+                }
+                currentUser.checkingBalance += cost;
+                existingPortfolioItem.quantity -= quantity;
+                if (existingPortfolioItem.quantity === 0) {
+                    currentUser.portfolio = currentUser.portfolio.filter(item => item.symbol !== symbol);
+                }
+            }
+            
+            await saveData('users', currentUser);
+            alert('Handel erfolgreich ausgeführt!');
+            renderInvestmentPortfolio();
+            renderDashboard();
+        }
+
+        function updateStockTicker() {
+            const tickerElement = document.getElementById('stock-ticker');
+            let tickerText = '';
+            for (const [symbol, price] of Object.entries(MOCK_STOCKS)) {
+                tickerText += `${symbol}: €${price.toFixed(2)} | `;
+            }
+            tickerElement.textContent = tickerText;
+            setInterval(() => {
+                for (let stock in MOCK_STOCKS) {
+                    MOCK_STOCKS[stock] += (Math.random() - 0.5) * 2; // Simulate price change
+                    if (MOCK_STOCKS[stock] < 0) MOCK_STOCKS[stock] = 0.1;
+                }
+                updateStockTicker();
+                if (document.getElementById('investments').classList.contains('active')) {
+                    renderInvestmentPortfolio();
+                }
+            }, 5000);
+        }
+
+        function updateCurrencyExchange() {
+            const from = document.getElementById('currency-from');
+            const to = document.getElementById('currency-to');
+            const amount = document.getElementById('currency-amount');
+            const result = document.getElementById('exchange-result');
+
+            function calculate() {
+                const rate = MOCK_EXCHANGE_RATES[from.value][to.value] || 1;
+                result.textContent = `${(amount.value * rate).toFixed(2)} ${to.value}`;
+            }
+            from.addEventListener('change', calculate);
+            to.addEventListener('change', calculate);
+            amount.addEventListener('input', calculate);
+            calculate();
+        }
+
+        // --- Loans Logic ---
+        document.getElementById('loan-application-form').addEventListener('submit', handleLoanApplication);
+
+        async function handleLoanApplication(event) {
+            event.preventDefault();
+            const amount = parseFloat(document.getElementById('loan-amount').value);
+            const term = parseInt(document.getElementById('loan-term').value);
+            const income = parseFloat(document.getElementById('loan-income').value);
+            
+            // Simple risk assessment
+            const riskScore = (income / amount) * 100;
+            const interestRate = riskScore < 10 ? 0.05 : (riskScore < 20 ? 0.08 : 0.12);
+            const monthlyPayment = (amount * (1 + interestRate)) / term;
+
+            const resultDiv = document.getElementById('loan-result');
+            resultDiv.innerHTML = `
+                <h4>Kreditberechnung</h4>
+                <p>Monatliche Rate: €${monthlyPayment.toFixed(2)}</p>
+                <p>Gesamtzinsen: €${(amount * interestRate).toFixed(2)}</p>
+                <p>Genehmigungsstatus: <span style="color: green;">Automatisch genehmigt</span></p>
+            `;
+            
+            const newLoan = {
+                username: currentUser.username,
+                amount,
+                term,
+                income,
+                status: 'approved',
+                monthlyPayment
+            };
+            await saveData('loans', newLoan);
+            
+            alert('Ihr Kreditantrag wurde erfolgreich bearbeitet!');
+        }
+
+        // --- Admin Panel Logic ---
+        document.getElementById('main-logo').addEventListener('click', handleAdminLoginClick);
+        document.getElementById('admin-login-form').addEventListener('submit', handleAdminLogin);
+        
+        function handleAdminLoginClick() {
+            lastLogoClicks.push(Date.now());
+            if (lastLogoClicks.length > 3) {
+                lastLogoClicks.shift();
+            }
+            if (lastLogoClicks.length === 3 && (lastLogoClicks[2] - lastLogoClicks[0]) < 1000) {
+                openModal('admin-login-modal');
             }
         }
 
-        function handleRequest(event) {
+        function handleAdminLogin(event) {
             event.preventDefault();
-            const senderUsername = document.getElementById('requestSender').value;
-            const amount = parseFloat(document.getElementById('requestAmount').value);
-            
-            alert(`Anfrage über €${amount.toFixed(2)} an ${senderUsername} gesendet.`);
-            closeModal('requestModal');
+            const password = document.getElementById('admin-password').value;
+            if (password === 'admin111') {
+                closeModal('admin-login-modal');
+                adminMode = true;
+                currentUser = { role: 'admin', username: 'admin' };
+                updateUI();
+                showSection('admin');
+                alert('Admin-Login erfolgreich!');
+            } else {
+                alert('Falsches Passwort.');
+            }
         }
 
-        function updateUI() {
-            if (currentUser) {
-                loginBtn.style.display = 'none';
-                userLinks.forEach(link => link.classList.remove('hidden'));
-                
-                // Update Dashboard
-                document.getElementById('welcomeMessage').textContent = `Hallo, ${currentUser.firstName}!`;
-                document.getElementById('checkingBalance').textContent = `€ ${currentUser.checkingBalance.toFixed(2)}`;
-                document.getElementById('savingsBalance').textContent = `€ ${currentUser.savingsBalance.toFixed(2)}`;
-                renderTransactions();
-                renderTransferRecipients();
-                renderRequestSenders();
-                renderUserList();
-            } else {
-                loginBtn.style.display = 'block';
-                userLinks.forEach(link => link.classList.add('hidden'));
+        async function renderAdminPanel() {
+            if (!adminMode) {
                 showSection('home');
+                return;
+            }
+            renderAdminUsers();
+            renderAdminTransactions();
+            renderAnalytics();
+        }
+
+        function showAdminSubpage(id) {
+            adminSubpages.forEach(page => page.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        async function renderAdminUsers() {
+            const userList = document.getElementById('admin-user-list');
+            userList.innerHTML = '';
+            const allUsers = await getAllData('users');
+            allUsers.forEach(user => {
+                const item = document.createElement('li');
+                item.className = 'admin-list-item';
+                item.innerHTML = `
+                    <div>
+                        <strong>${user.firstName} ${user.lastName}</strong> (${user.username})<br>
+                        <small>Status: ${user.status}</small>
+                    </div>
+                    <div class="admin-actions">
+                        <button onclick="toggleUserStatus('${user.username}')" class="btn btn-secondary">${user.status === 'active' ? 'Sperren' : 'Aktivieren'}</button>
+                        <button onclick="deleteUser('${user.username}')" class="btn btn-primary">Löschen</button>
+                    </div>
+                `;
+                userList.appendChild(item);
+            });
+        }
+
+        async function toggleUserStatus(username) {
+            const user = await getData('users', username);
+            user.status = user.status === 'active' ? 'frozen' : 'active';
+            await saveData('users', user);
+            alert(`Benutzer ${username} wurde ${user.status === 'active' ? 'aktiviert' : 'gesperrt'}.`);
+            renderAdminUsers();
+        }
+
+        async function deleteUser(username) {
+            if (confirm(`Sind Sie sicher, dass Sie ${username} löschen möchten?`)) {
+                await deleteData('users', username);
+                alert(`Benutzer ${username} wurde gelöscht.`);
+                renderAdminUsers();
             }
         }
         
-        function renderTransactions() {
-            const transactionList = document.getElementById('transactionList');
+        async function renderAdminTransactions() {
+            const transactionList = document.getElementById('admin-transaction-list');
             transactionList.innerHTML = '';
-            
-            const userTransactions = allTransactions
-                .filter(t => t.fromUser === currentUser.username || t.toUser === currentUser.username)
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .slice(0, 10);
+            const allTransactions = await getAllData('transactions');
+            const pendingTransactions = allTransactions.filter(t => t.status === 'pending');
 
-            userTransactions.forEach(t => {
-                const isIncoming = t.toUser === currentUser.username;
-                const sign = isIncoming ? '+' : '-';
+            if (pendingTransactions.length === 0) {
+                transactionList.innerHTML = '<li>Keine ausstehenden Transaktionen.</li>';
+                return;
+            }
+
+            pendingTransactions.forEach(t => {
                 const item = document.createElement('li');
-                item.className = `transaction-item ${isIncoming ? 'incoming' : 'outgoing'}`;
+                item.className = 'admin-list-item';
                 item.innerHTML = `
                     <div>
-                        <strong>${new Date(t.date).toLocaleDateString()}</strong><br>
-                        ${isIncoming ? `Von: ${t.fromUser}` : `An: ${t.toUser}`}<br>
+                        <strong>Von:</strong> ${t.fromUser}<br>
+                        <strong>An:</strong> ${t.toUser}<br>
+                        <strong>Betrag:</strong> €${t.amount.toFixed(2)}<br>
                         <small>${t.purpose}</small>
                     </div>
-                    <span style="font-weight: bold;">${sign} €${Math.abs(t.amount).toFixed(2)}</span>
+                    <div class="admin-actions">
+                        <button onclick="approveTransaction(${t.id})" class="btn btn-secondary">Freigeben</button>
+                        <button onclick="rejectTransaction(${t.id})" class="btn btn-primary">Ablehnen</button>
+                    </div>
                 `;
                 transactionList.appendChild(item);
             });
         }
         
-        function renderTransferRecipients() {
-            const recipientSelect = document.getElementById('transferRecipient');
-            recipientSelect.innerHTML = '<option value="">Benutzer wählen...</option>';
-            users.filter(u => u.username !== currentUser.username).forEach(user => {
-                const option = document.createElement('option');
-                option.value = user.username;
-                option.textContent = `${user.firstName} ${user.lastName} (${user.username})`;
-                recipientSelect.appendChild(option);
-            });
+        async function approveTransaction(id) {
+            const transaction = await getData('transactions', id);
+            transaction.status = 'approved';
+            await saveData('transactions', transaction);
+            alert('Transaktion freigegeben.');
+            renderAdminTransactions();
         }
         
-        function renderRequestSenders() {
-            const senderSelect = document.getElementById('requestSender');
-            senderSelect.innerHTML = '<option value="">Benutzer wählen...</option>';
-            users.filter(u => u.username !== currentUser.username).forEach(user => {
-                const option = document.createElement('option');
-                option.value = user.username;
-                option.textContent = `${user.firstName} ${user.lastName} (${user.username})`;
-                senderSelect.appendChild(option);
-            });
+        async function rejectTransaction(id) {
+            const transaction = await getData('transactions', id);
+            // In a real app, reverse the transfer
+            await deleteData('transactions', id);
+            alert('Transaktion abgelehnt.');
+            renderAdminTransactions();
         }
 
-        function renderUserList() {
-            const userList = document.getElementById('userList');
-            userList.innerHTML = '';
-            users.forEach(user => {
-                const item = document.createElement('li');
-                item.textContent = `${user.firstName} ${user.lastName} (${user.username}) - Kontostand: €${user.checkingBalance.toFixed(2)}`;
-                userList.appendChild(item);
-            });
+        let balanceChart;
+        async function renderAnalytics() {
+            const allUsers = await getAllData('users');
+            const allTransactions = await getAllData('transactions');
+            const allLoans = await getAllData('loans');
+            
+            document.getElementById('totalUsers').textContent = allUsers.length;
+            document.getElementById('totalTransfers').textContent = allTransactions.length;
+            document.getElementById('pendingLoans').textContent = allLoans.filter(l => l.status === 'pending').length;
+
+            const totalBalances = allUsers.reduce((sum, user) => sum + user.checkingBalance + user.savingsBalance, 0);
+            const data = {
+                labels: ['Total Balance'],
+                datasets: [{
+                    label: 'Total assets',
+                    data: [totalBalances],
+                    backgroundColor: 'rgba(0, 123, 255, 0.6)'
+                }]
+            };
+            if (balanceChart) balanceChart.destroy();
+            const ctx = document.getElementById('balanceChart').getContext('2d');
+            balanceChart = new Chart(ctx, { type: 'bar', data: data, options: { responsive: true, scales: { y: { beginAtZero: true } } } });
+        }
+
+        // --- Helper Functions ---
+        function updateUI() {
+            const userLoggedIn = !!currentUser;
+            const isAdmin = currentUser && currentUser.role === 'admin';
+            
+            userLinks.forEach(link => link.classList.toggle('hidden', !userLoggedIn || isAdmin));
+            adminLinks.forEach(link => link.classList.toggle('hidden', !isAdmin));
+            document.querySelector('.login-btn').style.display = userLoggedIn ? 'none' : 'block';
+            document.querySelector('.user-link.btn-primary').style.display = userLoggedIn ? 'block' : 'none';
+
+            if (userLoggedIn) {
+                renderDashboard();
+            }
         }
         
-        function showRequestModal() {
-            document.getElementById('requestModal').style.display = 'flex';
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
         }
 
         function closeModal(id) {
             document.getElementById(id).style.display = 'none';
         }
-
-        function saveData() {
-            localStorage.setItem('users', JSON.stringify(users));
-            localStorage.setItem('transactions', JSON.stringify(allTransactions));
+        
+        function renderProfile() {
+            if (!currentUser) return;
+            document.getElementById('profileUsername').textContent = currentUser.username;
+            document.getElementById('profileName').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
+            document.getElementById('profileEmail').textContent = currentUser.email;
         }
 
-        function downloadStatement() {
-            if (!currentUser) {
-                alert('Bitte melden Sie sich an, um einen Kontoauszug herunterzuladen.');
-                return;
-            }
-            
-            const statement = `
-Kontoauszug der VR Bank Rhein-Neckar eG
-Kontoauszug für ${currentUser.firstName} ${currentUser.lastName}
-
-Benutzername: ${currentUser.username}
-E-Mail: ${currentUser.email}
-
-Aktueller Kontostand: € ${currentUser.checkingBalance.toFixed(2)}
-Sparguthaben: € ${currentUser.savingsBalance.toFixed(2)}
-
-Letzte Transaktionen:
-${allTransactions
-    .filter(t => t.fromUser === currentUser.username || t.toUser === currentUser.username)
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 10)
-    .map(t => {
-        const isIncoming = t.toUser === currentUser.username;
-        const amount = isIncoming ? Math.abs(t.amount) : -Math.abs(t.amount);
-        return `${new Date(t.date).toLocaleDateString('de-DE')}: ${isIncoming ? t.fromUser : t.toUser} - €${amount.toFixed(2)} - ${t.purpose}`;
-    })
-    .join('\n')}
-
-Erstellt am: ${new Date().toLocaleDateString('de-DE')}
-VR Bank Rhein-Neckar eG - Ihre regionale Genossenschaftsbank
-            `;
-            
-            const blob = new Blob([statement], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `kontoauszug-${currentUser.username}-${new Date().toISOString().split('T')[0]}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
+        // --- Initialisation ---
+        async function init() {
+            await initDB();
+            loadTheme();
             const hash = window.location.hash.substring(1);
-            if (hash && document.getElementById(hash)) {
-                showSection(hash);
-            } else {
-                showSection('home');
-            }
+            showSection(hash && document.getElementById(hash) ? hash : 'home');
             updateUI();
-        });
 
+            // Set up mock initial data if DB is empty
+            const initialUsers = await getAllData('users');
+            if (initialUsers.length === 0) {
+                const mockUsers = [
+                    { username: 'max.mustermann', password: 'password', firstName: 'Max', lastName: 'Mustermann', email: 'max@example.com', role: 'user', checkingBalance: 5234.56, savingsBalance: 12456.78, portfolio: [{ symbol: 'AAPL', quantity: 5 }], loans: [], status: 'active' },
+                    { username: 'lisa.schmidt', password: 'password', firstName: 'Lisa', lastName: 'Schmidt', email: 'lisa@example.com', role: 'user', checkingBalance: 8765.43, savingsBalance: 21987.65, portfolio: [{ symbol: 'TSLA', quantity: 3 }], loans: [], status: 'active' }
+                ];
+                for (const user of mockUsers) {
+                    await saveData('users', user);
+                }
+                const mockTransactions = [
+                    { id: Date.now(), fromUser: 'max.mustermann', toUser: 'lisa.schmidt', amount: 50, purpose: 'Dinner', status: 'approved', timestamp: Date.now() },
+                    { id: Date.now() + 1, fromUser: 'lisa.schmidt', toUser: 'max.mustermann', amount: 25, purpose: 'Coffee', status: 'approved', timestamp: Date.now() + 1000 }
+                ];
+                for (const transaction of mockTransactions) {
+                    await saveData('transactions', transaction);
+                }
+            }
+        }
+
+        init();
     </script>
 </body>
 </html>
-
