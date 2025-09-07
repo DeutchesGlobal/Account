@@ -624,3 +624,814 @@
   </script>
 </body>
 </html>
+<!-- CHUNK 2 START -->
+<script>
+/*
+  CHUNK 2
+  Dashboard, Accounts, Transfers, Transactions, Receipts, UI wiring
+  Assumes CHUNK 1 defined: DB, sha256, showToast, seedIfEmpty, registerUser, signIn, signOut, and basic DOM elements.
+*/
+
+/* Ensure App exists */
+window.App = window.App || { user: null, stocks: {}, fx: { EUR:1, USD:1.09, GBP:0.86 }, symbols: ['DAX','DBX','BMW','SAP','BAYN'] };
+
+/* Ensure PushMock exists for notifications */
+window.PushMock = window.PushMock || { clients: [], connect(cb){ const id='c_'+Math.random().toString(36).slice(2,8); this.clients.push({id,cb}); return ()=>{ this.clients=this.clients.filter(x=>x.id!==id); } }, send(msg){ this.clients.forEach(c=>c.cb(msg)); } };
+
+/* Utility to create and/or return modal DOM */
+function ensureModal(id, htmlContent) {
+  let modal = document.getElementById(id);
+  if(modal) return modal;
+  const wrapper = document.createElement('div');
+  wrapper.id = id;
+  wrapper.className = 'modal-backdrop';
+  wrapper.style.display = 'none';
+  wrapper.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${htmlContent}</div>`;
+  document.body.appendChild(wrapper);
+  // dismiss on backdrop click
+  wrapper.addEventListener('click', (e)=>{ if(e.target===wrapper) wrapper.style.display='none'; });
+  // accessibility trap basic: ESC to close
+  wrapper.addEventListener('keydown', (e)=>{ if(e.key==='Escape') wrapper.style.display='none'; });
+  return wrapper;
+}
+
+/* Create Transfer Modal */
+ensureModal('transferModal', `
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h3>Initiate Transfer</h3>
+    <button class="btn secondary" id="closeTransferModal">Close</button>
+  </div>
+  <form id="transferForm" style="margin-top:.8rem">
+    <label class="skip" for="tr_from">From account</label>
+    <select id="tr_from" class="input" aria-label="From account"></select>
+
+    <label class="skip" for="tr_to">To (IBAN or account)</label>
+    <input id="tr_to" class="input" aria-label="To account" placeholder="Recipient account number / IBAN" />
+
+    <div style="display:flex;gap:.5rem;margin-top:.6rem">
+      <input id="tr_amount" class="input" type="number" step="0.01" min="0.01" placeholder="Amount" aria-label="Amount" />
+      <select id="tr_currency" class="input" style="max-width:120px" aria-label="Currency">
+        <option>EUR</option><option>USD</option><option>GBP</option>
+      </select>
+    </div>
+
+    <input id="tr_desc" class="input" placeholder="Description (optional)" style="margin-top:.6rem" aria-label="Description" />
+    <div style="text-align:right;margin-top:.6rem">
+      <button class="btn" id="tr_submit">Confirm & Submit</button>
+    </div>
+  </form>
+`);
+
+/* Create Feedback Modal (transaction initiated) */
+ensureModal('feedbackModal', `
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h3 id="fb_title">Transaction initiated</h3>
+    <button class="btn secondary" id="closeFeedbackModal">Close</button>
+  </div>
+  <div id="fb_body" style="margin-top:.6rem;color:var(--muted)"></div>
+  <div style="text-align:right;margin-top:.6rem"><button class="btn" id="fb_ok">Done</button></div>
+`);
+
+/* Wire transfer modal controls */
+document.getElementById('closeTransferModal').addEventListener('click', ()=> document.getElementById('transferModal').style.display='none');
+document.getElementById('closeFeedbackModal').addEventListener('click', ()=> document.getElementById('feedbackModal').style.display='none');
+document.getElementById('fb_ok').addEventListener('click', ()=> document.getElementById('feedbackModal').style.display='none');
+
+/* Receipt generation using jsPDF (already loaded in head) */
+async function generateReceiptPDF(tx) {
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    doc.setFontSize(18); doc.text('DeutscheGlobal Bank', 40, 60);
+    doc.setFontSize(12); doc.text('Transaction Receipt', 40, 90);
+    doc.setFontSize(10);
+    const lines = [
+      ['Transaction ID', tx.id],
+      ['Date', tx.processedAt || tx.createdAt],
+      ['From', tx.fromAccountId],
+      ['To', tx.toAccountId],
+      ['Amount', `${tx.amount} ${tx.currency}`],
+      ['Type', tx.type],
+      ['Status', tx.status]
+    ];
+    let y = 120;
+    lines.forEach(l=>{
+      doc.text(`${l[0]}: ${String(l[1])}`, 40, y);
+      y += 18;
+    });
+    if(tx.adminNotes) { doc.text(`Admin notes: ${tx.adminNotes}`, 40, y); y+=18; }
+    doc.setFontSize(9); doc.text('This document is issued by DeutscheGlobal Bank', 40, y+20);
+    doc.save(`receipt_${tx.id}.pdf`);
+  } catch (e) {
+    console.error('Receipt PDF error', e);
+    showToast('Unable to generate receipt', 'error');
+  }
+}
+
+/* Helper: get current user's accounts and fill select */
+async function populateFromAccountsSelect(selectId='tr_from') {
+  const select = document.getElementById(selectId);
+  if(!select) return;
+  select.innerHTML = '';
+  if(!App.user) {
+    const s = JSON.parse(localStorage.getItem('dgb_session')||'null'); if(s && s.userId) { const users = await DB.getAll('users'); App.user = users.find(u=>u.id===s.userId) || null; }
+  }
+  const accounts = App.user ? (await DB.getAll('accounts')).filter(a=>a.userId===App.user.id) : [];
+  if(accounts.length===0) { const opt = document.createElement('option'); opt.value=''; opt.textContent='No accounts'; select.appendChild(opt); return; }
+  for(const a of accounts){
+    const o = document.createElement('option'); o.value = a.id; o.textContent = `${a.accountNumber} • ${new Intl.NumberFormat('de-DE',{style:'currency',currency:a.currency}).format(a.balance)}`;
+    select.appendChild(o);
+  }
+}
+
+/* Create transaction object & store as pending */
+async function createPendingTransaction({ fromAccountId, toAccountId, amount, currency='EUR', description='' }){
+  const tx = {
+    id: 't_'+uid(10),
+    fromAccountId, toAccountId,
+    amount: Math.round(Number(amount)*100)/100,
+    currency, type: 'transfer', status: 'pending',
+    description: description || '', createdAt: nowISO(), processedAt: null, adminNotes: ''
+  };
+  await DB.add('transactions', tx);
+  // create audit
+  await DB.add('audit', { id: 'al_'+uid(8), action: 'createTransaction', data: tx, createdAt: nowISO() });
+  // push notify
+  PushMock.send({ title: 'Transaction initiated', body: `Transaction ${tx.id} is pending admin approval.` });
+  return tx;
+}
+
+/* Transfer form submit */
+document.getElementById('tr_submit').addEventListener('click', async function(e){
+  e.preventDefault();
+  const from = document.getElementById('tr_from').value;
+  const to = document.getElementById('tr_to').value.trim();
+  const amount = parseFloat(document.getElementById('tr_amount').value || 0);
+  const currency = document.getElementById('tr_currency').value;
+  const desc = document.getElementById('tr_desc').value || '';
+  if(!from || !to || !amount || amount <= 0) { showToast('Please complete transfer details', 'error'); return; }
+  // Basic business rule: cannot transfer negative amount
+  try {
+    const tx = await createPendingTransaction({ fromAccountId: from, toAccountId: to, amount, currency, description: desc });
+    // Show feedback modal
+    document.getElementById('fb_title').textContent = 'Transfer initiated';
+    document.getElementById('fb_body').textContent = `Your transfer (${new Intl.NumberFormat('de-DE',{style:'currency',currency}).format(amount)}) has been queued and is pending approval. You will be notified when processed. Reference: ${tx.id}`;
+    document.getElementById('feedbackModal').style.display = 'flex';
+    // close transfer modal
+    document.getElementById('transferModal').style.display = 'none';
+    // refresh UI
+    await renderTransactions(); await renderAccounts();
+  } catch (err) {
+    console.error('Transfer create error', err);
+    showToast(err.message || 'Transfer failed', 'error');
+  }
+});
+
+/* Render functions for dashboard pages */
+async function renderDashboardOverview() {
+  const main = document.getElementById('appContent');
+  main.innerHTML = '';
+  if(!App.user){
+    main.innerHTML = `<div class="onboarding"><h3>Welcome</h3><p style="color:var(--muted)">Sign in to access your accounts and services.</p></div>`;
+    return;
+  }
+  const accounts = (await DB.getAll('accounts')).filter(a=>a.userId===App.user.id);
+  const total = accounts.reduce((s,a)=>s+a.balance,0);
+  const wrapper = document.createElement('div');
+  wrapper.className = 'onboarding';
+  wrapper.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+    <div><h3>Good day, ${App.user.firstName}</h3><div style="color:var(--muted)">${App.user.email}</div></div>
+    <div style="text-align:right"><div style="color:var(--muted);font-size:.85rem">Total balance</div><div style="font-weight:800">${new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(total)}</div></div>
+  </div>`;
+  // account cards
+  const cardsWrap = document.createElement('div'); cardsWrap.style.display='grid'; cardsWrap.style.gridTemplateColumns='1fr 1fr'; cardsWrap.style.gap='8px'; cardsWrap.style.marginTop='12px';
+  for(const a of accounts){
+    const c = document.createElement('div'); c.className='account-card';
+    c.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-weight:800">${a.accountType.toUpperCase()}</div>
+        <div style="color:var(--muted);font-size:.88rem">${a.accountNumber}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:800">${new Intl.NumberFormat('de-DE',{style:'currency',currency:a.currency}).format(a.balance)}</div>
+        <div style="margin-top:.5rem"><button class="btn ghost" onclick="openTransferForAccount('${a.id}')">Send</button></div>
+      </div>
+    </div>`;
+    cardsWrap.appendChild(c);
+  }
+  wrapper.appendChild(cardsWrap);
+
+  // recent transactions
+  const allTx = await DB.getAll('transactions');
+  const myIds = accounts.map(a=>a.id);
+  const myTx = allTx.filter(t=> myIds.includes(t.fromAccountId) || myIds.includes(t.toAccountId)).sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt)).slice(0,8);
+  const txCard = document.createElement('div'); txCard.className='account-card'; txCard.style.marginTop='10px';
+  txCard.innerHTML = `<h4>Recent activity</h4>`;
+  const table = document.createElement('table'); table.className='table'; table.innerHTML = `<thead><tr><th>Date</th><th>From</th><th>Amount</th><th>Status</th></tr></thead>`;
+  const tb = document.createElement('tbody');
+  myTx.forEach(t=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${new Date(t.createdAt).toLocaleString()}</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis">${t.fromAccountId}</td><td>${new Intl.NumberFormat('de-DE',{style:'currency',currency:t.currency}).format(t.amount)}</td><td>${t.status}</td>`;
+    tb.appendChild(tr);
+  });
+  table.appendChild(tb); txCard.appendChild(table);
+  wrapper.appendChild(txCard);
+
+  main.appendChild(wrapper);
+}
+
+/* open transfer modal with prefilled from account */
+async function openTransferForAccount(accountId){
+  await populateFromAccountsSelect('tr_from');
+  if(accountId) document.getElementById('tr_from').value = accountId;
+  document.getElementById('tr_to').value = '';
+  document.getElementById('tr_amount').value = '';
+  document.getElementById('tr_desc').value = '';
+  document.getElementById('transferModal').style.display = 'flex';
+  document.getElementById('tr_to').focus();
+}
+
+/* Render accounts page (detailed) */
+async function renderAccounts() {
+  const main = document.getElementById('appContent');
+  main.innerHTML = '';
+  const accounts = (await DB.getAll('accounts')).filter(a=>a.userId===App.user.id);
+  const wrapper = document.createElement('div'); wrapper.className='onboarding';
+  wrapper.innerHTML = `<h3>Accounts</h3><p style="color:var(--muted)">Manage your accounts, view IBAN and balances.</p>`;
+  const table = document.createElement('table'); table.className='table'; table.innerHTML = `<thead><tr><th>Type</th><th>Number</th><th>Balance</th><th>Actions</th></tr></thead>`;
+  const tb = document.createElement('tbody');
+  for(const a of accounts){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${a.accountType}</td><td>${a.accountNumber}</td><td>${new Intl.NumberFormat('de-DE',{style:'currency',currency:a.currency}).format(a.balance)}</td><td><button class="btn ghost" onclick="openTransferForAccount('${a.id}')">Send</button> <button class="btn" onclick="downloadStatement('${a.id}')">Statement</button></td>`;
+    tb.appendChild(tr);
+  }
+  table.appendChild(tb); wrapper.appendChild(table);
+  main.appendChild(wrapper);
+}
+
+/* generate a simple statement PDF for account */
+async function downloadStatement(accountId) {
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const account = (await DB.getAll('accounts')).find(a=>a.id===accountId);
+    if(!account){ showToast('Account not found', 'error'); return; }
+    doc.setFontSize(16); doc.text('Account Statement', 40, 60);
+    doc.setFontSize(11); doc.text(`Account: ${account.accountNumber}`, 40, 80);
+    const txs = (await DB.getAll('transactions')).filter(t=> t.fromAccountId===accountId || t.toAccountId===accountId ).slice(0,100);
+    doc.setFontSize(10);
+    let y = 100;
+    txs.forEach(t=>{
+      doc.text(`${new Date(t.createdAt).toLocaleDateString()} ${t.id} ${t.amount} ${t.currency} ${t.status}`, 40, y);
+      y += 12;
+      if(y > 760){ doc.addPage(); y = 40; }
+    });
+    doc.save(`statement_${account.accountNumber}.pdf`);
+  } catch(e) { console.error(e); showToast('Unable to create statement', 'error'); }
+}
+
+/* Render transactions page (all relevant) */
+async function renderTransactions() {
+  const main = document.getElementById('appContent');
+  main.innerHTML = '';
+  const accounts = (await DB.getAll('accounts')).filter(a=>a.userId===App.user.id);
+  const myIds = accounts.map(a=>a.id);
+  const txs = (await DB.getAll('transactions')).filter(t=> myIds.includes(t.fromAccountId) || myIds.includes(t.toAccountId)).sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+  const wrapper = document.createElement('div'); wrapper.className='onboarding';
+  wrapper.innerHTML = `<h3>Transactions</h3><p style="color:var(--muted)">Complete history of your transfers and payments</p>`;
+  const table = document.createElement('table'); table.className='table'; table.innerHTML = `<thead><tr><th>ID</th><th>Date</th><th>From</th><th>To</th><th>Amount</th><th>Status</th><th>Receipt</th></tr></thead>`;
+  const tb = document.createElement('tbody');
+  txs.forEach(t=>{
+    const tr = document.createElement('tr');
+    const receiptBtn = t.status === 'completed' ? `<button class="btn ghost" onclick='(async ()=>{ await generateReceiptPDF(${JSON.stringify(t).replace(/"/g,"&quot;")}); })()'>PDF</button>` : '-';
+    tr.innerHTML = `<td>${t.id}</td><td>${new Date(t.createdAt).toLocaleString()}</td><td style="max-width:120px;overflow:hidden">${t.fromAccountId}</td><td style="max-width:120px;overflow:hidden">${t.toAccountId}</td><td>${new Intl.NumberFormat('de-DE',{style:'currency',currency:t.currency}).format(t.amount)}</td><td>${t.status}</td><td>${receiptBtn}</td>`;
+    tb.appendChild(tr);
+  });
+  table.appendChild(tb); wrapper.appendChild(table);
+  main.appendChild(wrapper);
+}
+
+/* Render investments (simple mock) */
+async function renderInvestments() {
+  const main = document.getElementById('appContent'); main.innerHTML = '';
+  const wrapper = document.createElement('div'); wrapper.className = 'onboarding';
+  wrapper.innerHTML = `<h3>Investments</h3><p style="color:var(--muted)">Your portfolio and mock trading tools</p>`;
+  const grid = document.createElement('div'); grid.style.display='flex'; grid.style.gap='8px'; grid.style.flexWrap='wrap';
+  App.symbols.forEach(s=>{
+    const c = document.createElement('div'); c.style.minWidth='140px'; c.style.background='var(--glass-2)'; c.style.padding='8px'; c.style.borderRadius='10px';
+    const price = (App.stocks[s] && App.stocks[s].price) ? App.stocks[s].price : Math.round((20 + Math.random()*200)*100)/100;
+    c.innerHTML = `<div style="font-weight:700">${s}</div><div style="color:var(--muted);margin-top:.35rem">${price.toFixed(2)} EUR</div><div style="margin-top:.6rem"><button class="btn ghost" onclick="buyMock('${s}')">Buy 1</button></div>`;
+    grid.appendChild(c);
+  });
+  wrapper.appendChild(grid);
+  main.appendChild(wrapper);
+}
+
+/* Render loans */
+async function renderLoans() {
+  const main = document.getElementById('appContent'); main.innerHTML = '';
+  const wrapper = document.createElement('div'); wrapper.className='onboarding';
+  wrapper.innerHTML = `<h3>Loans</h3><p style="color:var(--muted)">Apply for personal or business credit. View repayment calculators and loan status.</p>
+    <div style="margin-top:.6rem">
+      <input id="loan_amount" class="input" placeholder="Loan amount (EUR)" />
+      <input id="loan_term" class="input" placeholder="Term (months)" style="margin-top:.5rem" />
+      <div style="text-align:right;margin-top:.6rem"><button class="btn" id="loan_calc_btn">Calculate</button></div>
+      <div id="loan_result" style="margin-top:.6rem;color:var(--muted)"></div>
+    </div>`;
+  main.appendChild(wrapper);
+  document.getElementById('loan_calc_btn').addEventListener('click', ()=>{
+    const P = parseFloat(document.getElementById('loan_amount').value||0);
+    const n = parseInt(document.getElementById('loan_term').value||12,10);
+    if(!P || P<=0) return showToast('Enter loan amount', 'error');
+    const r = 0.05/12;
+    const monthly = (P*r)/(1-Math.pow(1+r,-n));
+    document.getElementById('loan_result').innerHTML = `Estimated monthly payment: <strong>${new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(Math.round(monthly*100)/100)}</strong>`;
+  });
+}
+
+/* Render support page */
+async function renderSupport() {
+  openChat(); // show chat modal
+}
+
+/* Buying mock */
+function buyMock(sym){
+  showToast(`Purchased 1 share of ${sym}`, 'success');
+}
+
+/* Hook navigation buttons (desktop shell) - app shell buttons defined in Chunk 1 */
+document.getElementById('btnSpeedTours')?.addEventListener('click', async ()=>{ await renderDashboardOverview(); showToast('Welcome to your banking tour — navigate on bottom nav or the sidebar', 'info'); });
+document.getElementById('btnSignOut')?.addEventListener('click', async ()=>{ await signOut(); });
+
+/* Bottom nav (if present) wiring - detect any nav buttons */
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', async (e)=>{
+    const nav = btn.dataset.nav;
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    switch(nav){
+      case 'overview': await renderDashboardOverview(); break;
+      case 'transfer': await openTransferForAccount(); break;
+      case 'transactions': await renderTransactions(); break;
+      case 'support': await renderSupport(); break;
+      default: await renderDashboardOverview();
+    }
+  });
+});
+
+/* If left-side primary nav exists (Chunk 1 reserved) wire it — fallback to bottom nav */
+const sideMap = {
+  'btnOverview': renderDashboardOverview,
+  'btnAccounts': renderAccounts,
+  'btnTransfer': openTransferForAccount,
+  'btnTransactions': renderTransactions,
+  'btnInvest': renderInvestments,
+  'btnLoans': renderLoans,
+  'btnSupport': renderSupport,
+  'btnSettings': async ()=> { document.getElementById('appContent').innerHTML = '<div class="onboarding"><h3>Settings</h3><p style="color:var(--muted)">Manage language, theme and account preferences.</p></div>'; }
+};
+Object.keys(sideMap).forEach(id=>{
+  const elBtn = document.getElementById(id);
+  if(elBtn) elBtn.addEventListener('click', async ()=> { await sideMap[id](); });
+});
+
+/* Render helper for accounts & transactions used in header preview */
+async function renderAccounts() { /* implemented above, keep for reference */ }
+
+/* Render transactions on demand initially for experience */
+async function initialRender() {
+  // if logged in, show overview; else landing remains
+  if(!App.user) {
+    const s = JSON.parse(localStorage.getItem('dgb_session')||'null');
+    if(s && s.userId){
+      const allUsers = await DB.getAll('users');
+      App.user = allUsers.find(u=>u.id===s.userId) || null;
+    }
+  }
+  if(App.user){
+    document.getElementById('landing').style.display = 'none';
+    document.getElementById('appShell').style.display = 'block';
+    await renderDashboardOverview();
+    await populateFromAccountsSelect();
+  } else {
+    document.getElementById('landing').style.display = 'block';
+    document.getElementById('appShell').style.display = 'none';
+  }
+}
+
+/* Helper to refresh accounts view and transactions */
+async function refreshViews(){
+  if(document.querySelector('#appContent h3')?.textContent?.toLowerCase().includes('accounts')) { await renderAccounts(); }
+  // If overview visible, update
+  if(document.querySelector('#appContent h3')?.textContent?.toLowerCase().includes('welcome') || document.querySelector('#appContent h3')?.textContent?.toLowerCase().includes('good day')) { await renderDashboardOverview(); }
+  if(document.querySelector('#appContent h3')?.textContent?.toLowerCase().includes('transactions')) { await renderTransactions(); }
+}
+
+/* Simulate admin processing (optional demo helper)
+   This function will not auto-approve in production; it's here to demonstrate the end-to-end lifecycle.
+   It will detect pending transactions and leave them pending until admin action (Chunk 3) is executed.
+*/
+async function demoAutoProcessPendingDemoOnly(){
+  // Do not auto-approve by default. Commented out. Admin will process transactions in Chunk 3.
+  // const txs = await DB.getAll('transactions'); for(const t of txs.filter(x=>x.status==='pending')){ /* process if desired */ }
+}
+
+/* Expose some helpers to global scope for later chunks */
+window.renderDashboardOverview = renderDashboardOverview;
+window.renderAccounts = renderAccounts;
+window.renderTransfer = openTransferForAccount;
+window.renderTransactions = renderTransactions;
+window.renderInvestments = renderInvestments;
+window.renderLoans = renderLoans;
+window.generateReceiptPDF = generateReceiptPDF;
+
+/* initialization */
+(async function(){
+  // ensure accounts select populated when modal opens
+  document.getElementById('transferModal').addEventListener('click', ()=>{ /* trap if needed */ });
+  // show initial content (if logged in)
+  await initialRender();
+  // subscribe to pushes for UI feedback
+  PushMock.connect((m)=>{ showToast(m.title || 'Notification', 'info', 4000); });
+})();
+</script>
+<!-- CHUNK<!-- CHUNK 3 START -->
+<script>
+/*
+  CHUNK 3
+  Admin Console, CSV/JSON import/export, EmailJS integration hooks, WebSocket mock,
+  Audit logs, Service Worker & manifest generators (downloadable), accessibility hardening,
+  and final wiring for admin transaction approval/rejection with real-time UI updates.
+
+  Paste this after CHUNK 2. Assumes CHUNK 1 & CHUNK 2 appended earlier (DB, App, showToast, etc.)
+*/
+
+/* ======= Utilities & Safety checks ======= */
+if(!window.DB) throw new Error('DB not found. Ensure CHUNK 1 loaded before CHUNK 3.');
+window.Admin = window.Admin || {};
+
+/* Simple helper to create modal if not present */
+function createAdminModalIfMissing(){
+  if(document.getElementById('adminModal')) return;
+  const div = document.createElement('div');
+  div.id = 'adminModal';
+  div.className = 'modal-backdrop';
+  div.style.display = 'none';
+  div.innerHTML = `
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="adminTitle" style="max-width:980px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 id="adminTitle">Administration Console</h3>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <button id="downloadSw" class="btn ghost" title="Download sw.js">Download sw.js</button>
+          <button id="downloadManifest" class="btn ghost" title="Download manifest.json">Download manifest</button>
+          <button id="adminCloseBtn" class="btn">Close</button>
+        </div>
+      </div>
+
+      <div style="margin-top:.8rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <section style="background:var(--glass-2);padding:.8rem;border-radius:10px">
+          <h4>Users</h4>
+          <table class="table" id="adminUsersTable"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead><tbody></tbody></table>
+          <div style="text-align:right;margin-top:.5rem"><button id="adminCreateUserBtn" class="btn">Create User</button></div>
+        </section>
+
+        <section style="background:var(--glass-2);padding:.8rem;border-radius:10px">
+          <h4>Accounts</h4>
+          <table class="table" id="adminAccountsTable"><thead><tr><th>Account</th><th>User</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table>
+        </section>
+
+        <section style="grid-column:span 2;background:var(--glass-2);padding:.8rem;border-radius:10px">
+          <h4>Transactions</h4>
+          <table class="table" id="adminTxTable"><thead><tr><th>ID</th><th>From</th><th>To</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table>
+        </section>
+
+        <section style="grid-column:span 2;background:var(--glass-2);padding:.8rem;border-radius:10px">
+          <h4>Backup & Email</h4>
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+            <button id="adminExportJSON" class="btn ghost">Export JSON</button>
+            <button id="adminExportCSV" class="btn ghost">Export CSV</button>
+            <input id="adminImportFile" type="file" accept=".json,.csv" class="input" style="max-width:260px" />
+            <button id="adminDoImport" class="btn">Import</button>
+          </div>
+          <div style="display:flex;gap:.4rem;align-items:center;margin-top:.6rem">
+            <input id="email_service_admin" class="input" placeholder="EmailJS service_id" />
+            <input id="email_template_admin" class="input" placeholder="EmailJS template_id" />
+            <input id="email_public_admin" class="input" placeholder="EmailJS public key" />
+            <button id="adminSaveEmail" class="btn">Save</button>
+            <button id="adminTestEmail" class="btn ghost">Send Test</button>
+          </div>
+        </section>
+
+        <section style="grid-column:span 2;background:var(--glass-2);padding:.8rem;border-radius:10px">
+          <h4>Audit Logs</h4>
+          <div id="auditList" style="max-height:160px;overflow:auto;background:white;padding:.5rem;border-radius:8px;border:1px solid rgba(2,6,23,.04)"></div>
+        </section>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(div);
+
+  document.getElementById('adminCloseBtn').addEventListener('click', ()=> document.getElementById('adminModal').style.display='none');
+  document.getElementById('adminCreateUserBtn').addEventListener('click', adminCreateUser);
+  document.getElementById('adminExportJSON').addEventListener('click', adminExportJSON);
+  document.getElementById('adminExportCSV').addEventListener('click', adminExportCSV);
+  document.getElementById('adminDoImport').addEventListener('click', adminImportFile);
+  document.getElementById('adminSaveEmail').addEventListener('click', adminSaveEmailCfg);
+  document.getElementById('adminTestEmail').addEventListener('click', adminSendTestEmail);
+  document.getElementById('downloadSw').addEventListener('click', ()=> downloadFile(swCode(), 'sw.js', 'application/javascript'));
+  document.getElementById('downloadManifest').addEventListener('click', ()=> downloadFile(JSON.stringify(manifestJSON(), null, 2), 'manifest.json', 'application/json'));
+}
+
+/* ======= Admin CRUD & actions ======= */
+
+/* Render admin tables */
+async function renderAdminTables(){
+  try{
+    const users = await DB.getAll('users');
+    const accounts = await DB.getAll('accounts');
+    const txs = await DB.getAll('transactions');
+    // Users
+    const utb = document.querySelector('#adminUsersTable tbody'); if(utb){ utb.innerHTML = ''; users.forEach(u=>{ const tr = document.createElement('tr'); tr.innerHTML = `<td>${u.firstName || '-'} ${u.lastName || ''}</td><td>${u.email || '-'}</td><td>${u.role || 'user'}</td><td><button class="btn ghost" onclick="adminEditUser('${u.id}')">Edit</button> <button class="btn" onclick="adminDeleteUser('${u.id}')">Delete</button></td>`; utb.appendChild(tr); }); }
+    // Accounts
+    const atb = document.querySelector('#adminAccountsTable tbody'); if(atb){ atb.innerHTML=''; accounts.forEach(a=>{ const user = users.find(u=>u.id===a.userId) || {}; const tr = document.createElement('tr'); tr.innerHTML = `<td>${a.accountNumber}</td><td>${(user.firstName||'')+' '+(user.lastName||'')}</td><td>${new Intl.NumberFormat('de-DE',{style:'currency',currency:a.currency}).format(a.balance)}</td><td>${a.status}</td><td><button class="btn" onclick="adminFreezeAccount('${a.id}')">Freeze</button> <button class="btn ghost" onclick="adminCloseAccount('${a.id}')">Close</button></td>`; atb.appendChild(tr); }); }
+    // Transactions
+    const ttb = document.querySelector('#adminTxTable tbody'); if(ttb){ ttb.innerHTML=''; txs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).forEach(t=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${t.id}</td><td style="max-width:120px;overflow:hidden">${t.fromAccountId}</td><td style="max-width:120px;overflow:hidden">${t.toAccountId}</td><td>${new Intl.NumberFormat('de-DE',{style:'currency',currency:t.currency}).format(t.amount)}</td><td>${t.status}</td><td><button class="btn" onclick="adminApproveTx('${t.id}')">Approve</button> <button class="btn ghost" onclick="adminRejectTx('${t.id}')">Reject</button></td>`; ttb.appendChild(tr); }); }
+    renderAuditList();
+  }catch(e){ console.error('renderAdminTables', e); }
+}
+
+/* Admin helpers */
+async function adminCreateUser(){
+  const email = prompt('Email for new user (will be created with default password Welcome!2025):');
+  if(!email) return;
+  const id = 'u_'+uid(8);
+  const pwHash = await sha256('Welcome!2025');
+  const user = { id, email: email.toLowerCase(), password: pwHash, firstName: 'New', lastName: 'User', role: 'user', createdAt: nowISO(), status:'active' };
+  await DB.add('users', user);
+  // create default checking account
+  await DB.add('accounts', { id: 'a_'+uid(8), userId: id, accountNumber: 'DE'+Math.floor(10000000 + Math.random()*89999999), accountType:'checking', balance:0, currency:'EUR', status:'active', createdAt: nowISO()});
+  await DB.add('audit', { id:'al_'+uid(8), action:'createUser', data:user, createdAt: nowISO()});
+  showToast('User created', 'success');
+  await renderAdminTables();
+}
+
+window.adminEditUser = async function(userId){
+  const users = await DB.getAll('users'); const u = users.find(x=>x.id===userId);
+  if(!u) return showToast('User not found','error');
+  const name = prompt('Full name', `${u.firstName||''} ${u.lastName||''}`); if(!name) return;
+  const parts = name.split(' '); u.firstName = parts[0]||u.firstName; u.lastName = parts.slice(1).join(' ')||u.lastName;
+  await DB.put('users', u); await DB.add('audit', { id:'al_'+uid(8), action:'editUser', data:u, createdAt: nowISO()});
+  showToast('User updated','success'); await renderAdminTables();
+};
+
+window.adminDeleteUser = async function(userId){
+  if(!confirm('Delete user and associated accounts?')) return;
+  const accounts = await DB.getAll('accounts'); for(const a of accounts.filter(x=>x.userId===userId)) await DB.delete('accounts', a.id);
+  await DB.delete('users', userId);
+  await DB.add('audit', { id:'al_'+uid(8), action:'deleteUser', data:{userId}, createdAt: nowISO()});
+  showToast('User deleted','info'); await renderAdminTables();
+};
+
+window.adminFreezeAccount = async function(accountId){
+  const a = await DB.get('accounts', accountId);
+  if(!a) return showToast('Account not found','error');
+  a.status = 'frozen'; await DB.put('accounts', a);
+  await DB.add('audit', { id:'al_'+uid(8), action:'freezeAccount', data:a, createdAt: nowISO()});
+  showToast('Account frozen','info'); await renderAdminTables();
+};
+
+window.adminCloseAccount = async function(accountId){
+  if(!confirm('Close this account?')) return;
+  const a = await DB.get('accounts', accountId);
+  if(!a) return showToast('Account not found','error');
+  a.status = 'closed'; await DB.put('accounts', a);
+  await DB.add('audit', { id:'al_'+uid(8), action:'closeAccount', data:a, createdAt: nowISO()});
+  showToast('Account closed','info'); await renderAdminTables();
+};
+
+/* Transaction approval/rejection - update balances and logs */
+window.adminApproveTx = async function(txId){
+  try{
+    const txs = await DB.getAll('transactions'); const tx = txs.find(t=>t.id===txId);
+    if(!tx) return showToast('Transaction not found','error');
+    if(tx.status === 'completed') return showToast('Already processed','info');
+    // validate funds
+    const from = await DB.get('accounts', tx.fromAccountId);
+    if(!from) { tx.status='failed'; tx.adminNotes='Origin account missing'; await DB.put('transactions', tx); await DB.add('audit',{ id:'al_'+uid(8), action:'approveTxFailed', data:tx, createdAt: nowISO()}); renderAdminTables(); showToast('Origin account missing','error'); return; }
+    if(from.balance < tx.amount){ tx.status='failed'; tx.adminNotes='Insufficient funds'; await DB.put('transactions', tx); await DB.add('audit',{ id:'al_'+uid(8), action:'approveTxFailed', data:tx, createdAt: nowISO()}); renderAdminTables(); showToast('Insufficient funds','error'); return; }
+    // deduct & credit
+    from.balance = Math.round((from.balance - tx.amount)*100)/100; await DB.put('accounts', from);
+    const toAcct = await DB.get('accounts', tx.toAccountId);
+    if(toAcct){ toAcct.balance = Math.round((toAcct.balance + tx.amount)*100)/100; await DB.put('accounts', toAcct); }
+    tx.status = 'completed'; tx.processedAt = nowISO(); tx.adminNotes = 'Approved by admin';
+    await DB.put('transactions', tx);
+    await DB.add('audit', { id:'al_'+uid(8), action:'approveTx', data:tx, createdAt: nowISO()});
+    showToast('Transaction approved & processed', 'success');
+    // notify via PushMock
+    PushMock.send({ title: `Transaction ${tx.id} completed`, body: `Your payment of ${tx.amount} ${tx.currency} was processed.` });
+    renderAdminTables();
+    // immediate UI update for signed-in user
+    if(App.user) { await renderDashboardOverview(); await renderTransactions(); }
+    // auto-generate receipt PDF for audit and user convenience
+    generateReceiptPDF(tx);
+  }catch(e){ console.error('approve error', e); showToast('Approval failed','error'); }
+};
+
+window.adminRejectTx = async function(txId){
+  try{
+    const txs = await DB.getAll('transactions'); const tx = txs.find(t=>t.id===txId);
+    if(!tx) return showToast('Transaction not found','error');
+    tx.status = 'declined'; tx.processedAt = nowISO(); tx.adminNotes = 'Declined by admin';
+    await DB.put('transactions', tx);
+    await DB.add('audit', { id:'al_'+uid(8), action:'rejectTx', data:tx, createdAt: nowISO()});
+    showToast('Transaction declined', 'info');
+    PushMock.send({ title: `Transaction ${tx.id} declined`, body: `Your payment was declined by the bank.` });
+    renderAdminTables();
+    if(App.user){ await renderDashboardOverview(); await renderTransactions(); }
+  }catch(e){ console.error('reject error', e); showToast('Rejection failed','error'); }
+};
+
+/* Audit list render */
+async function renderAuditList(){
+  const logs = await DB.getAll('audit'); const container = document.getElementById('auditList');
+  if(!container) return;
+  container.innerHTML = logs.slice(-200).reverse().map(l=>`<div style="padding:.35rem;border-bottom:1px dashed rgba(2,6,23,.04);font-size:.9rem"><strong>${l.action}</strong> <span style="color:var(--muted);font-size:.8rem">at ${new Date(l.createdAt).toLocaleString()}</span><div style="color:var(--muted);margin-top:.2rem">${JSON.stringify(l.data).slice(0,200)}</div></div>`).join('');
+}
+
+/* ======= Backup / Export / Import ======= */
+async function adminExportJSON(){
+  const payload = {
+    users: await DB.getAll('users'),
+    accounts: await DB.getAll('accounts'),
+    transactions: await DB.getAll('transactions'),
+    audit: await DB.getAll('audit')
+  };
+  const blob = new Blob([JSON.stringify(payload,null,2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'dgbank_backup.json'; a.click(); URL.revokeObjectURL(url);
+  showToast('JSON export started', 'success');
+}
+
+async function adminExportCSV(){
+  const users = await DB.getAll('users');
+  const csv = ['id,firstName,lastName,email,role,createdAt', ...users.map(u=> [u.id, u.firstName||'', u.lastName||'', u.email||'', u.role||'user', u.createdAt||''].map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',') )].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'users.csv'; a.click(); URL.revokeObjectURL(url);
+  showToast('CSV export started', 'success');
+}
+
+async function adminImportFile(){
+  const f = document.getElementById('adminImportFile').files[0];
+  if(!f) return showToast('Choose a file to import', 'error');
+  const txt = await f.text();
+  if(f.name.endsWith('.json')){
+    try{
+      const obj = JSON.parse(txt);
+      if(obj.users){ await DB.clear('users'); for(const u of obj.users) await DB.add('users', u); }
+      if(obj.accounts){ await DB.clear('accounts'); for(const a of obj.accounts) await DB.add('accounts', a); }
+      if(obj.transactions){ await DB.clear('transactions'); for(const t of obj.transactions) await DB.add('transactions', t); }
+      if(obj.audit){ await DB.clear('audit'); for(const a of obj.audit) await DB.add('audit', a); }
+      showToast('JSON import completed', 'success');
+      await renderAdminTables();
+    }catch(e){ console.error('import json', e); showToast('Import failed', 'error'); }
+  } else if(f.name.endsWith('.csv')){
+    // basic CSV user import
+    try{
+      const lines = txt.split(/\r?\n/); const hdr = lines.shift().split(',').map(h=>h.replace(/(^"|"$)/g,''));
+      for(const line of lines){
+        if(!line.trim()) continue;
+        const cols = line.split(',').map(c=>c.replace(/(^"|"$)/g,''));
+        const obj = {}; hdr.forEach((h,i)=> obj[h] = cols[i]);
+        const pwhash = await sha256('Imported!2025');
+        const user = { id: obj.id || 'u_'+uid(8), firstName: obj.firstName||'', lastName: obj.lastName||'', email: obj.email||'', password: pwhash, role: obj.role||'user', createdAt: obj.createdAt||nowISO() };
+        await DB.add('users', user);
+      }
+      showToast('CSV import completed', 'success'); await renderAdminTables();
+    }catch(e){ console.error('import csv', e); showToast('CSV import failed', 'error'); }
+  } else showToast('Unsupported file type', 'error');
+}
+
+/* ======= EmailJS integration (admin-configurable) ======= */
+function adminSaveEmailCfg(){
+  const cfg = { service_id: document.getElementById('email_service_admin').value.trim(), template_id: document.getElementById('email_template_admin').value.trim(), public_key: document.getElementById('email_public_admin').value.trim() };
+  localStorage.setItem('dgb_email_cfg', JSON.stringify(cfg));
+  try{ if(cfg.public_key) emailjs.init(cfg.public_key); }catch(e){ console.warn('email init failed', e); }
+  showToast('EmailJS configuration saved', 'success');
+}
+async function adminSendTestEmail(){
+  const cfg = JSON.parse(localStorage.getItem('dgb_email_cfg')||'{}');
+  if(!cfg.service_id || !cfg.template_id || !cfg.public_key) return showToast('Please configure EmailJS first', 'error');
+  try{
+    await emailjs.send(cfg.service_id, cfg.template_id, { to_email: 'admin@deutscheglobal.bank', subject: 'DeutscheGlobal test', message: 'This is a system test.' }, cfg.public_key);
+    showToast('Test email sent', 'success');
+  }catch(e){ console.error('email send',e); showToast('Email send failed', 'error'); }
+}
+
+/* ======= WebSocket mock & Push integration ======= */
+/* Provide simple WebSocket stub and a function to send a simulated push */
+window.WebSocketMock = {
+  clients: [],
+  connect(cb){ const id = 'w_'+uid(6); this.clients.push({id,cb}); return ()=>{ this.clients = this.clients.filter(c=>c.id !== id); } },
+  broadcast(msg){ this.clients.forEach(c=>c.cb(msg)) }
+};
+
+window.simulateWebSocketMessage = function(title, body){
+  const payload = JSON.stringify({ title, body, ts: nowISO() });
+  WebSocketMock.broadcast(payload);
+  PushMock.send({title, body});
+  showToast(title, 'info');
+};
+
+/* Allow developer/admin to open admin console (used by triple click) */
+window.openAdmin = async function(){
+  createAdminModalIfMissing();
+  document.getElementById('adminModal').style.display = 'flex';
+  // populate known email config fields
+  const cfg = JSON.parse(localStorage.getItem('dgb_email_cfg')||'{}');
+  document.getElementById('email_service_admin').value = cfg.service_id || '';
+  document.getElementById('email_template_admin').value = cfg.template_id || '';
+  document.getElementById('email_public_admin').value = cfg.public_key || '';
+  await renderAdminTables();
+};
+
+/* Admin delete user wrapper (alias from earlier) */
+window.adminDeleteUser = window.adminDeleteUser || (async (userId)=>{ await DB.delete('users', userId); showToast('User removed', 'info'); await renderAdminTables(); });
+
+/* ======= Service Worker & Manifest generator (downloadable helper) ======= */
+function swCode(){
+  // Simple, cache-first service worker (recommended to place a proper sw.js at repo root for GitHub Pages)
+  return `const CACHE_NAME='dgbank-static-v1';const ASSETS=['/','/index.html'];self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(ASSETS)).catch(()=>{}))});self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim())});self.addEventListener('fetch',e=>{const req=e.request; if(req.method!=='GET') return; e.respondWith(caches.match(req).then(r=>r||fetch(req).then(resp=>{caches.open(CACHE_NAME).then(c=>c.put(req,resp.clone()));return resp})).catch(()=>{}))});`;
+}
+
+function manifestJSON(){
+  return {
+    name: "DeutscheGlobal Bank",
+    short_name: "DGBank",
+    start_url: "./index.html",
+    display: "standalone",
+    background_color: "#f5f7fb",
+    theme_color: "#003366",
+    description: "DeutscheGlobal Bank — secure digital banking",
+    icons: [
+      { src: "assets/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "assets/icons/icon-512.png", sizes: "512x512", type: "image/png" }
+    ]
+  };
+}
+
+/* Download helper */
+function downloadFile(content, filename='file.txt', mime='text/plain'){
+  const blob = (content instanceof Blob) ? content : new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
+}
+
+/* ======= Accessibility / Keyboard improvements ======= */
+/* When modals open, trap focus inside them (basic) */
+function trapModalFocus(modalBackdrop){
+  const modal = modalBackdrop.querySelector('.modal'); if(!modal) return;
+  const focusable = modal.querySelectorAll('a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])');
+  if(!focusable.length) return;
+  const first = focusable[0], last = focusable[focusable.length-1];
+  modalBackdrop.addEventListener('keydown', function(e){
+    if(e.key === 'Tab'){
+      if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    } else if(e.key === 'Escape'){ modalBackdrop.style.display = 'none'; }
+  });
+}
+
+/* Ensure focus traps on admin modal creation */
+createAdminModalIfMissing();
+trapModalFocus(document.getElementById('adminModal'));
+
+/* ======= Wire super-admin triple click to open admin (completes secret flow) ======= */
+(function wireAdminSecret(){
+  const logo = document.getElementById('siteLogo');
+  let clicks = 0, timer = null;
+  logo.addEventListener('click', ()=>{ clicks++; clearTimeout(timer); timer=setTimeout(()=>clicks=0,1200); if(clicks>=3){ clicks=0; const pwd = prompt('Enter super admin password:'); if(pwd === 'admin/admin111'){ openAdmin(); } else showToast('Invalid admin password','error'); } });
+})();
+
+/* ======= Initialize Admin UI when available ======= */
+(async function adminInit(){
+  createAdminModalIfMissing();
+  // Connect WebSocketMock to show messages within admin console (optional)
+  WebSocketMock.connect((msg)=>{ try{ const data = JSON.parse(msg); showToast(`WS: ${data.title}`, 'info'); }catch(e){} });
+  // Ensure admin tables reflect DB state
+  await renderAdminTables();
+})();
+
+/* ======= Expose audit/tracing helper for developer console ======= */
+window.dumpAudit = async function(){ console.table(await DB.getAll('audit')); };
+
+/* ======= Final: provide convenience function to fully export required deployment files (sw.js & manifest.json) ======= */
+window.provideDeploymentFiles = function(){
+  // generate sw.js
+  downloadFile(swCode(), 'sw.js', 'application/javascript');
+  downloadFile(JSON.stringify(manifestJSON(), null, 2), 'manifest.json', 'application/json');
+  showToast('sw.js and manifest.json downloaded to your machine', 'success', 4500);
+};
+
+/* CHUNK 3 END */
+</script>
+<!-- CHUNK 3 END --> 2 END -->
