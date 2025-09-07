@@ -1,703 +1,626 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>DeutscheGlobal Bank — Demo</title>
-<meta name="description" content="DeutscheGlobal Bank - Demo PWA banking app"/>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<!-- jsPDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-<!-- EmailJS client -->
-<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>DeutscheGlobal Bank — Digital Banking</title>
+  <meta name="description" content="DeutscheGlobal Bank — secure, mobile-first digital banking. Professional banking services, accounts, payments, investments and support." />
+  <!-- Fonts & icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- jsPDF for receipts (used later) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<style>
-:root{--primary:#003366;--accent:#ff6600;--muted:#6b7280;--bg:#f7f9fc;--card:#fff;--shadow:0 8px 24px rgba(2,6,23,.08);--radius:12px}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#f3f6fb 0%,var(--bg) 100%);color:#06202f;-webkit-font-smoothing:antialiased}
-a{color:inherit}
-.container{max-width:1200px;margin:0 auto;padding:1rem}
-header{position:sticky;top:0;background:rgba(255,255,255,.85);backdrop-filter:blur(6px);border-bottom:1px solid rgba(2,6,23,.04);z-index:999}
-.header-inner{display:flex;align-items:center;justify-content:space-between;padding:.8rem 0}
-.logo{display:flex;align-items:center;gap:.6rem;cursor:pointer}
-.brand-mark{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(135deg,var(--primary),#0066cc)}
-.nav{display:flex;gap:.6rem;align-items:center}
-.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:10px;border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer}
-.btn.secondary{background:#fff;border:1px solid rgba(2,6,23,.06);color:var(--primary)}
-.hero{display:grid;grid-template-columns:1fr 420px;gap:1rem;padding:1.8rem 0}
-.hero-card{background:linear-gradient(180deg,#fff,#fbfdff);padding:1.1rem;border-radius:12px;box-shadow:var(--shadow)}
-.services{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-top:.8rem}
-.service{background:var(--card);padding:.8rem;border-radius:10px;box-shadow:var(--shadow)}
-.animated-cards{position:relative;height:220px}
-.bank-card{position:absolute;width:320px;height:180px;border-radius:12px;padding:1rem;color:#fff;display:flex;flex-direction:column;justify-content:space-between}
-.card-1{background:linear-gradient(135deg,#003366,#0066cc);left:0;top:0;transform:rotate(-6deg)}
-.card-2{background:linear-gradient(135deg,#0ea5a0,#06b6d4);right:0;top:24px;transform:rotate(6deg);width:300px;height:160px}
-.card-3{background:linear-gradient(135deg,#ff6600,#ff8533);left:40px;bottom:0;width:280px;height:150px;transform:rotate(-2deg)}
-.app{display:grid;grid-template-columns:260px 1fr;gap:1rem;min-height:70vh;padding:1rem 0}
-.sidebar{background:var(--card);border-radius:12px;padding:1rem;box-shadow:var(--shadow);position:sticky;top:88px}
-.side-item{display:flex;align-items:center;gap:.6rem;padding:.5rem;border-radius:8px;color:var(--muted);cursor:pointer}
-.side-item.active{background:linear-gradient(90deg,rgba(0,51,102,.04),rgba(0,102,204,.02));color:var(--primary);font-weight:700}
-.section-card{background:var(--card);padding:1rem;border-radius:12px;box-shadow:var(--shadow);margin-bottom:1rem}
-.table{width:100%;border-collapse:collapse}
-.table th,.table td{padding:.55rem .5rem;text-align:left;border-bottom:1px dashed rgba(2,6,23,.04);font-size:.92rem}
-.modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.35);display:flex;align-items:center;justify-content:center;z-index:2000}
-.modal{background:#fff;border-radius:12px;padding:1rem;max-width:900px;width:100%;box-shadow:var(--shadow)}
-.input{display:block;padding:.6rem .7rem;border-radius:8px;border:1px solid rgba(2,6,23,.06);width:100%}
-.toast{position:fixed;right:1rem;bottom:1rem;background:var(--primary);color:#fff;padding:.8rem 1rem;border-radius:8px;box-shadow:var(--shadow)}
-.skip{position:absolute;left:-999px;top:auto;height:1px;width:1px;overflow:hidden}
-.skip:focus{left:1rem;top:1rem;height:auto;width:auto;padding:.5rem .75rem;background:#fff;border-radius:6px;box-shadow:var(--shadow)}
-@media (max-width:980px){.hero{grid-template-columns:1fr}.app{grid-template-columns:1fr}.sidebar{position:relative;top:auto}}
-</style>
+  <style>
+    /*
+      Chunk 1 styles: Mobile-first, glassmorphism theme
+      - Use custom properties for quick theme changes
+      - Designed to be expanded in further chunks
+    */
+    :root{
+      --bg: linear-gradient(180deg,#f5f7fb 0%, #eef3fb 100%);
+      --glass: rgba(255,255,255,0.62);
+      --glass-2: rgba(255,255,255,0.85);
+      --primary: #003366;
+      --accent: #ff6600;
+      --muted: #6b7280;
+      --card-shadow: 0 8px 30px rgba(2,6,23,0.08);
+      --radius: 14px;
+      --glass-border: rgba(255,255,255,0.5);
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);-webkit-font-smoothing:antialiased;color:#071423}
+    a{color:inherit}
+    .container{max-width:1100px;margin:0 auto;padding:0 1rem}
+    .skip{position:absolute;left:-999px} .skip:focus{left:1rem;top:1rem;padding:.4rem .6rem;background:white;border-radius:6px;box-shadow:var(--card-shadow)}
+
+    /* Header */
+    header.site-header{
+      position:sticky;top:0;z-index:120;
+      background:linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.6));
+      backdrop-filter: blur(6px);
+      border-bottom:1px solid rgba(2,6,23,0.04);
+    }
+    .header-inner{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;gap:.5rem}
+    .brand{display:flex;align-items:center;gap:.6rem;cursor:pointer;user-select:none}
+    .brand .mark{
+      width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;
+      background:linear-gradient(135deg,var(--primary),#0066cc);font-size:1.1rem;font-weight:800;
+      box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    }
+    .brand .titles{line-height:1}
+    .brand .title{font-weight:800;font-size:1rem}
+    .brand .subtitle{font-size:.78rem;color:var(--muted);margin-top:2px}
+
+    .header-actions{display:flex;align-items:center;gap:.6rem}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .9rem;border-radius:10px;border:none;background:var(--primary);color:white;font-weight:700;cursor:pointer}
+    .btn.secondary{background:transparent;border:1px solid rgba(2,6,23,0.06);color:var(--primary);font-weight:700}
+    .icon-btn{background:transparent;border-radius:10px;padding:.5rem;color:var(--muted);border:1px solid rgba(2,6,23,0.04)}
+
+    /* Hero / landing */
+    .hero{display:grid;grid-template-columns:1fr;gap:1rem;padding:1rem 0}
+    .hero-card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0.55));
+      border-radius:var(--radius);box-shadow:var(--card-shadow);padding:1rem;border:1px solid var(--glass-border)
+    }
+    .hero-grid{display:grid;grid-template-columns:1fr;gap:.8rem}
+    .hero h1{margin:0;font-size:1.5rem;line-height:1.05}
+    .hero p.lead{color:var(--muted);margin-top:.5rem}
+
+    .services{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin-top:.7rem}
+    .service{background:var(--glass-2);padding:.65rem;border-radius:12px;box-shadow:var(--card-shadow);border:1px solid rgba(255,255,255,0.6)}
+    .service h4{margin:0;font-size:1rem}
+    .service p{color:var(--muted);margin-top:.45rem;font-size:.92rem}
+
+    .visuals{display:flex;gap:.6rem;margin-top:.6rem}
+    .visuals img{width:100%;height:120px;object-fit:cover;border-radius:10px;box-shadow:var(--card-shadow)}
+
+    /* Cards preview (Visa/Mastercard/Amex) */
+    .card-stack{position:relative;height:180px;margin-top:.9rem}
+    .card{
+      position:absolute;width:320px;height:180px;border-radius:14px;color:white;padding:1rem;display:flex;flex-direction:column;justify-content:space-between;
+      box-shadow:0 12px 30px rgba(2,6,23,0.12);
+      transform-origin:center;
+    }
+    .card .brand{display:flex;align-items:center;gap:.6rem}
+    .card .number{font-weight:800;font-size:1.35rem;letter-spacing:2px}
+    .card.visa{background:linear-gradient(135deg,#113a63,#0066cc);left:0;top:0;transform:rotate(-6deg)}
+    .card.mc{background:linear-gradient(135deg,#bd3e29,#ff6f2d);right:0;top:18px;transform:rotate(6deg);width:300px;height:160px}
+    .card.amex{background:linear-gradient(135deg,#0da3ad,#06b6d4);left:20px;bottom:0;transform:rotate(-2deg);width:280px;height:150px}
+
+    /* App shell placeholder (hidden until sign in) */
+    .app-shell{display:none;margin-top:1rem}
+    .app-grid{display:grid;grid-template-columns:1fr;gap:1rem}
+    .onboarding{background:var(--glass-2);padding:1rem;border-radius:12px;border:1px solid rgba(255,255,255,0.6);box-shadow:var(--card-shadow)}
+
+    /* footer */
+    footer.site-footer{margin-top:1rem;padding:1rem 0;color:var(--muted);font-size:.92rem;border-top:1px solid rgba(2,6,23,0.04)}
+    footer .foot-grid{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center}
+
+    /* Modal basics */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;z-index:220}
+    .modal{background:linear-gradient(180deg,rgba(255,255,255,0.98),white);border-radius:12px;padding:1rem;max-width:820px;width:100%;box-shadow:var(--card-shadow);border:1px solid rgba(2,6,23,0.04)}
+    .modal h3{margin:0}
+    .input{width:100%;padding:.6rem;border-radius:8px;border:1px solid rgba(2,6,23,0.06);margin-top:.5rem}
+
+    /* small screens first; larger screens adapt */
+    @media(min-width:880px){
+      .hero{grid-template-columns:1fr 420px}
+      .hero-grid{grid-template-columns:1fr}
+      .services{grid-template-columns:repeat(3,1fr)}
+      .visuals img{height:160px}
+      .app-grid{grid-template-columns:260px 1fr}
+      .card-stack{height:220px}
+    }
+  </style>
 </head>
+
 <body>
-<a href="#main" class="skip">Skip to content</a>
+  <a class="skip" href="#main">Skip to main content</a>
 
-<header>
-  <div class="container header-inner">
-    <div style="display:flex;align-items:center;gap:12px">
-      <div id="logo" class="logo" title="Click 3× for admin access" role="button" tabindex="0" aria-label="DeutscheGlobal Bank logo">
-        <div class="brand-mark"><i class="fa-solid fa-building-columns"></i></div>
-        <div>
-          <div style="font-weight:800">DeutscheGlobal</div>
-          <div style="font-size:.72rem;color:var(--muted);margin-top:-2px">Bank - Digital Banking</div>
+  <header class="site-header" role="banner">
+    <div class="container header-inner">
+      <div class="brand" id="siteLogo" tabindex="0" role="button" aria-label="DeutscheGlobal Bank logo — triple-click for secure admin">
+        <div class="mark"><i class="fa-solid fa-building-columns"></i></div>
+        <div class="titles">
+          <div class="title">DeutscheGlobal Bank</div>
+          <div class="subtitle">Digital banking & premium services</div>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div class="btn secondary" style="background:var(--accent);color:#fff;border:none;font-weight:800">DE</div>
-        <div style="color:var(--muted);font-size:.9rem">Secure · Trusted</div>
+
+      <div class="header-actions" role="toolbar" aria-label="Top actions">
+        <button id="openContact" class="btn secondary" aria-haspopup="dialog"><i class="fa-solid fa-phone"></i> Contact</button>
+        <button id="openSignIn" class="btn"><i class="fa-solid fa-right-to-bracket"></i> Sign in</button>
       </div>
     </div>
+  </header>
 
-    <nav class="nav" role="navigation" aria-label="Main navigation">
-      <button id="themeToggle" class="btn secondary" aria-label="Toggle theme"><i class="fa-solid fa-moon"></i></button>
-      <button id="openSignIn" class="btn" aria-haspopup="dialog" aria-controls="authModal"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
-    </nav>
-  </div>
-</header>
+  <main id="main" class="container" role="main" aria-live="polite">
+    <!-- HERO / LANDING -->
+    <section class="hero" aria-labelledby="heroHeading">
+      <div class="hero-card">
+        <div class="hero-grid">
+          <div>
+            <h1 id="heroHeading">Banking crafted for your life</h1>
+            <p class="lead">Modern accounts, global card acceptance and personalized financial tools — available on mobile and desktop. Secure, compliant, and designed for members across Germany and Europe.</p>
 
-<main id="main" class="container" aria-live="polite">
-  <section class="hero" aria-labelledby="heroTitle">
-    <div class="hero-card">
-      <h1 id="heroTitle">Banking, reimagined for the digital age</h1>
-      <p style="color:var(--muted)">DeutscheGlobal Bank — modern banking with secure transfers, investments, loans and dedicated support. Demo app only.</p>
-      <div style="display:flex;gap:.6rem;margin-top:.5rem">
-        <button class="btn" id="ctaOpenRegister"><i class="fa-solid fa-user-plus"></i> Create account</button>
-        <button class="btn secondary" id="ctaLearn">Learn more</button>
-      </div>
+            <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.6rem">
+              <button id="ctaOpenRegister" class="btn"><i class="fa-solid fa-user-plus"></i> Open an account</button>
+              <button id="ctaLearnMore" class="btn secondary"><i class="fa-solid fa-circle-info"></i> Learn more</button>
+            </div>
 
-      <div style="margin-top:1rem" class="services">
-        <div class="service"><h4>Accounts & Cards</h4><p style="color:var(--muted)">Checking, savings and business accounts with virtual cards.</p></div>
-        <div class="service"><h4>Transfers & Payments</h4><p style="color:var(--muted)">Internal transfers, scheduled payments and currency exchange simulation.</p></div>
-        <div class="service"><h4>Investments</h4><p style="color:var(--muted)">Mock portfolio with simulated stock updates.</p></div>
-      </div>
-
-      <div style="margin-top:1rem;display:flex;gap:.5rem;align-items:center">
-        <div style="color:var(--muted);font-size:.9rem">Live Stocks:</div>
-        <div id="stockTicker" style="display:flex;gap:.6rem;align-items:center;color:var(--primary)"></div>
-      </div>
-    </div>
-
-    <div class="hero-card animated-cards" aria-hidden="true">
-      <div class="bank-card card-1" style="left:0;top:0;">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:700">DEUTSCHE</div><div style="font-size:.8rem">VISA</div>
-        </div>
-        <div style="font-size:1.6rem;font-weight:800">**** **** **** 2345</div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-size:.8rem">Valid Thru 12/28</div><div style="font-size:.9rem">Mr. Müller</div>
-        </div>
-      </div>
-
-      <div class="bank-card card-2" style="right:0;top:30px;">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:700">GLOBAL</div><div style="font-size:.7rem">MASTERCARD</div>
-        </div>
-        <div style="font-size:1.2rem;font-weight:800">**** **** **** 9876</div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-size:.75rem">Valid Thru 07/27</div><div style="font-size:.8rem">A. Schmidt</div>
-        </div>
-      </div>
-
-      <div class="bank-card card-3" style="left:40px;bottom:0;">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:800">DGB</div><div style="font-size:.7rem">BUSINESS</div>
-        </div>
-        <div style="font-size:1.1rem;font-weight:800">**** **** **** 4521</div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-size:.75rem">Valid Thru 10/29</div><div style="font-size:.8rem">Acme GmbH</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div id="appShell" class="app" style="display:none;margin-top:1rem">
-    <aside class="sidebar" role="navigation" aria-label="Sidebar">
-      <div style="display:flex;flex-direction:column;gap:.75rem">
-        <div id="userSummary" style="margin-bottom:.5rem"></div>
-        <div class="side-item active" data-section="overview" role="button" tabindex="0"><i class="fa-solid fa-house"></i> Overview</div>
-        <div class="side-item" data-section="accounts" role="button" tabindex="0"><i class="fa-solid fa-wallet"></i> Accounts</div>
-        <div class="side-item" data-section="transfer" role="button" tabindex="0"><i class="fa-solid fa-arrow-right-arrow-left"></i> Transfer</div>
-        <div class="side-item" data-section="transactions" role="button" tabindex="0"><i class="fa-solid fa-list"></i> Transactions</div>
-        <div class="side-item" data-section="investments" role="button" tabindex="0"><i class="fa-solid fa-chart-line"></i> Investments</div>
-        <div class="side-item" data-section="loans" role="button" tabindex="0"><i class="fa-solid fa-hand-holding-dollar"></i> Loans</div>
-        <div class="side-item" data-section="support" role="button" tabindex="0"><i class="fa-solid fa-headset"></i> Support</div>
-        <div class="side-item" data-section="settings" role="button" tabindex="0"><i class="fa-solid fa-gear"></i> Settings</div>
-        <div style="margin-top:.6rem"><button id="btnLogout" class="btn secondary" style="width:100%">Log out</button></div>
-      </div>
-    </aside>
-
-    <main class="dashboard-main" role="main" aria-live="polite">
-      <div id="sectionContent"></div>
-    </main>
-  </div>
-
-  <footer style="margin-top:2rem;padding:2rem 0;border-top:1px solid rgba(2,6,23,.04)">
-    <div class="container" style="display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <h4>DeutscheGlobal Bank</h4>
-        <p style="color:var(--muted)">Digital bank demo — for learning and testing only.</p>
-      </div>
-      <div style="text-align:right">
-        <div style="color:var(--muted)">Contact</div>
-        <div style="margin-top:.6rem"><button id="openSupport" class="btn secondary">Support</button></div>
-      </div>
-    </div>
-  </footer>
-</main>
-
-<!-- AUTH MODAL -->
-<div id="authModal" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="authTitle">
-  <div class="modal" role="document">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3 id="authTitle">Sign In</h3>
-      <button class="btn secondary" id="closeAuth" aria-label="Close auth">Close</button>
-    </div>
-    <div style="margin-top:.8rem">
-      <div id="authForms">
-        <form id="signinForm">
-          <label for="si_email" class="skip">Email</label>
-          <input id="si_email" class="input" required type="email" aria-label="Email"/>
-          <label for="si_password" class="skip">Password</label>
-          <input id="si_password" class="input" type="password" required aria-label="Password"/>
-          <div style="display:flex;gap:.6rem;align-items:center;justify-content:space-between;margin-top:.6rem">
-            <button type="submit" class="btn">Sign In</button>
-            <a href="#" id="forgotLink" style="color:var(--muted)">Forgot password?</a>
+            <div class="services" role="list" aria-label="Our services" style="margin-top:1rem">
+              <div class="service" role="listitem">
+                <h4>Accounts & Cards</h4>
+                <p>Current, savings and business accounts with physical and virtual card options.</p>
+              </div>
+              <div class="service" role="listitem">
+                <h4>Payments & FX</h4>
+                <p>Fast internal transfers, SEPA payments and multi-currency wallet management.</p>
+              </div>
+              <div class="service" role="listitem">
+                <h4>Investments & Loans</h4>
+                <p>Portfolio tools, savings plans and tailored lending with clear terms.</p>
+              </div>
+            </div>
           </div>
-        </form>
 
-        <form id="registerForm" style="display:none;margin-top:.6rem">
-          <div style="display:flex;gap:.6rem">
-            <input id="r_first" class="input" placeholder="First name" required aria-label="First name"/>
-            <input id="r_last" class="input" placeholder="Last name" required aria-label="Last name"/>
+          <aside>
+            <!-- Card stack with well-known card brands -->
+            <div class="card-stack" aria-hidden="true">
+              <div class="card visa" role="img" aria-label="Visa debit card">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div style="font-weight:700">DeutscheGlobal</div>
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Visa_2014_logo_detail.svg" alt="Visa" style="height:20px;filter:brightness(1) saturate(1);"/>
+                </div>
+                <div class="number">**** **** **** 2345</div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div style="font-size:.82rem">Valid THRU 12/28</div>
+                  <div style="font-size:.9rem">S. Meier</div>
+                </div>
+              </div>
+
+              <div class="card mc" role="img" aria-label="Mastercard credit card">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div style="font-weight:700">DeutscheGlobal</div>
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" style="height:20px;filter:brightness(1)"/>
+                </div>
+                <div class="number">**** **** **** 9876</div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div style="font-size:.82rem">Valid THRU 07/27</div>
+                  <div style="font-size:.9rem">A. Schmidt</div>
+                </div>
+              </div>
+
+              <div class="card amex" role="img" aria-label="American Express corporate card">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div style="font-weight:800">DGB</div>
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/3/30/American_Express_logo.svg" alt="Amex" style="height:20px;filter:brightness(1)"/>
+                </div>
+                <div class="number">**** **** **** 4521</div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div style="font-size:.75rem">Valid THRU 10/29</div>
+                  <div style="font-size:.8rem">Acme GmbH</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- a gallery/people images (Unsplash) -->
+            <div class="visuals" aria-hidden="false">
+              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop" alt="Smiling customer 1" />
+              <img src="https://images.unsplash.com/photo-1531123414780-f0b6c9aee7b3?q=80&w=800&auto=format&fit=crop" alt="Business client" />
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- App shell (hidden until authenticated) -->
+    <section id="appShell" class="app-shell" aria-hidden="true">
+      <div class="app-grid">
+        <nav id="primaryNav" aria-label="Primary navigation">
+          <!-- left nav will be rendered in next chunk -->
+          <div class="onboarding">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div id="uNamePreview" style="font-weight:700">Welcome</div>
+                <div id="uMailPreview" style="color:var(--muted);font-size:.9rem">user@example.com</div>
+              </div>
+              <div id="uBalancePreview" style="text-align:right">
+                <div style="color:var(--muted);font-size:.8rem">Total</div>
+                <div style="font-weight:800">€0.00</div>
+              </div>
+            </div>
+            <div style="margin-top:.6rem"><button id="btnSignOut" class="btn secondary">Sign out</button></div>
           </div>
-          <div style="margin-top:.6rem"><input id="r_email" type="email" class="input" placeholder="Email" required aria-label="Email"/></div>
-          <div style="margin-top:.6rem;display:flex;gap:.6rem">
-            <input id="r_phone" class="input" placeholder="Phone" aria-label="Phone"/>
-            <select id="r_country" class="input" style="max-width:180px" aria-label="Country">
-              <option value="DE">Germany</option>
-              <option value="FR">France</option>
-              <option value="ES">Spain</option>
-              <option value="IT">Italy</option>
-              <option value="EN">United Kingdom</option>
-            </select>
+        </nav>
+
+        <main id="appContent">
+          <!-- dashboard / pages will be injected in later chunks -->
+          <div class="onboarding">
+            <h3>Welcome to DeutscheGlobal</h3>
+            <p style="color:var(--muted)">Access your accounts, make payments, manage cards and loans — secure and fast.</p>
+            <div style="margin-top:.6rem"><button id="btnSpeedTours" class="btn">Quick tour</button></div>
           </div>
-          <div style="margin-top:.6rem;display:flex;gap:.6rem">
-            <input id="r_password" class="input" type="password" placeholder="Password" required aria-label="Password"/>
-            <input id="r_password_confirm" class="input" type="password" placeholder="Confirm password" required aria-label="Confirm password"/>
-          </div>
-          <div style="margin-top:.6rem;display:flex;gap:.6rem;align-items:center;justify-content:space-between">
-            <button class="btn" id="btnRegister" type="submit">Create account</button>
-            <button id="showSignIn" class="btn secondary" type="button">Back to Sign In</button>
-          </div>
-        </form>
+        </main>
+      </div>
+    </section>
+
+    <footer class="site-footer" role="contentinfo">
+      <div class="container foot-grid">
+        <div>© <strong>DeutscheGlobal Bank</strong> — All rights reserved.</div>
+        <div style="color:var(--muted)"><a href="#privacy" style="color:var(--muted);text-decoration:none">Privacy</a> · <a href="#security" style="color:var(--muted);text-decoration:none">Security</a> · <a href="#contact" style="color:var(--muted);text-decoration:none">Contact</a></div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- AUTH MODAL (Sign in / Register / Forgot) -->
+  <div id="authModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="authHeading">
+    <div class="modal" role="document" aria-live="assertive">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 id="authHeading">Sign in to your account</h3>
+        <button id="closeAuth" class="btn secondary" aria-label="Close sign in modal">Close</button>
+      </div>
+
+      <div style="margin-top:.8rem;">
+        <div id="authForms">
+          <!-- Sign in -->
+          <form id="formSignIn" style="display:block">
+            <label class="skip" for="si_email">Email</label>
+            <input id="si_email" class="input" type="email" placeholder="name@company.com" required autocomplete="username" />
+            <label class="skip" for="si_password">Password</label>
+            <input id="si_password" class="input" type="password" placeholder="Password" required autocomplete="current-password" />
+            <div style="display:flex;gap:.6rem;margin-top:.6rem;align-items:center;justify-content:space-between">
+              <button type="submit" class="btn">Sign in</button>
+              <div style="display:flex;gap:.4rem">
+                <button type="button" id="openRegister" class="btn secondary">Open account</button>
+                <button type="button" id="openForgot" class="btn secondary">Forgot</button>
+              </div>
+            </div>
+          </form>
+
+          <!-- Register -->
+          <form id="formRegister" style="display:none;margin-top:.6rem">
+            <label class="skip" for="r_first">First name</label>
+            <input id="r_first" class="input" placeholder="First name" required />
+            <label class="skip" for="r_last">Last name</label>
+            <input id="r_last" class="input" placeholder="Last name" required style="margin-top:.45rem" />
+            <label class="skip" for="r_email">Email</label>
+            <input id="r_email" class="input" type="email" placeholder="Email" required style="margin-top:.45rem" />
+            <label class="skip" for="r_password">Password</label>
+            <input id="r_password" class="input" type="password" placeholder="Create password (8+ characters)" required style="margin-top:.45rem" />
+            <div style="display:flex;gap:.5rem;margin-top:.6rem;justify-content:flex-end">
+              <button id="submitRegister" class="btn">Create account</button>
+              <button id="backToSignIn" type="button" class="btn secondary">Back</button>
+            </div>
+          </form>
+
+          <!-- Forgot password -->
+          <form id="formForgot" style="display:none;margin-top:.6rem">
+            <label class="skip" for="f_email">Email</label>
+            <input id="f_email" class="input" type="email" placeholder="Enter your account email" required />
+            <div style="display:flex;gap:.6rem;margin-top:.6rem;justify-content:flex-end">
+              <button id="doForgot" class="btn">Send reset link</button>
+              <button id="backToSignIn2" type="button" class="btn secondary">Back</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- TRANSFER MODAL -->
-<div id="transferModal" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3>Send Money</h3>
-      <button onclick="closeTransfer()" class="btn secondary" aria-label="Close transfer">Close</button>
-    </div>
-    <form id="transferForm" style="margin-top:.8rem">
-      <div style="display:flex;gap:.6rem">
-        <select id="fromAccount" class="input" aria-label="From account"></select>
-        <input id="toAccount" class="input" placeholder="Recipient account number" required aria-label="Recipient account"/>
-      </div>
-      <div style="display:flex;gap:.6rem;margin-top:.6rem">
-        <input id="transferAmount" type="number" min="0.01" step="0.01" class="input" placeholder="Amount" required aria-label="Amount"/>
-        <select id="transferCurrency" class="input" style="max-width:160px" aria-label="Currency"><option>EUR</option><option>USD</option><option>GBP</option></select>
-      </div>
-      <div style="margin-top:.6rem"><input id="transferDesc" class="input" placeholder="Description (optional)" aria-label="Description"/></div>
-      <div style="margin-top:.8rem;display:flex;gap:.6rem;justify-content:flex-end">
-        <button type="submit" class="btn">Send</button>
-      </div>
-    </form>
-  </div>
-</div>
+  <!-- basic toast host -->
+  <div id="toastHost" aria-live="polite" style="position:fixed;right:1rem;bottom:1rem;z-index:1000"></div>
 
-<!-- ADMIN MODAL -->
-<div id="adminModal" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true">
-  <div class="modal" style="max-width:980px">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3>Admin Console</h3>
-      <div style="display:flex;gap:.6rem">
-        <button id="btnExport" class="btn secondary">Export DB</button>
-        <button id="btnImport" class="btn secondary">Import</button>
-        <button id="btnEmailTest" class="btn secondary">Email Test</button>
-        <button id="closeAdmin" class="btn">Close</button>
-      </div>
-    </div>
+  <script>
+    /*
+      CHUNK 1 JS:
+      - Lightweight IndexedDB wrapper (used for auth & user storage)
+      - Sign up / Sign in handlers
+      - Modal open/close & basic accessibility (focus)
+      - Super admin triple-click on logo (opens admin — admin UI added in later chunk)
+      - This chunk intentionally focuses on landing + auth; subsequent chunks will add Dashboard, Admin, Transactions, etc.
+    */
 
-    <div style="margin-top:.8rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-      <div class="section-card">
-        <h4>Users</h4>
-        <div style="margin-top:.6rem">
-          <table class="table" id="adminUsersTable">
-            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div style="margin-top:.6rem;text-align:right"><button id="btnCreateUser" class="btn">Create User</button></div>
-      </div>
-
-      <div class="section-card">
-        <h4>Transactions</h4>
-        <div style="margin-top:.6rem">
-          <table class="table" id="adminTransactionsTable">
-            <thead><tr><th>ID</th><th>From</th><th>To</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="section-card" style="grid-column:span 2">
-        <h4>System Settings & EmailJS</h4>
-        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
-          <input id="email_service" class="input" placeholder="EmailJS service_id"/>
-          <input id="email_template" class="input" placeholder="EmailJS template_id"/>
-          <input id="email_public" class="input" placeholder="EmailJS public key"/>
-        </div>
-        <div style="margin-top:.6rem;display:flex;gap:.6rem;justify-content:flex-end">
-          <button id="saveEmailCfg" class="btn">Save EmailJS</button>
-          <button id="sendTestEmail" class="btn secondary">Send Test Email</button>
-        </div>
-      </div>
-
-      <div class="section-card" style="grid-column:span 2">
-        <h4>Backup / Restore</h4>
-        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
-          <button id="exportJSON" class="btn">Export JSON</button>
-          <button id="exportCSV" class="btn secondary">Export CSV</button>
-          <input id="importFile" type="file" accept=".json,.csv" class="input" style="max-width:260px"/>
-          <button id="doImport" class="btn" style="margin-left:6px">Import</button>
-        </div>
-        <div style="margin-top:.6rem;color:var(--muted)">Import supports JSON export from this app or CSV with headers matching entities (users,accounts,transactions).</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- CHAT MODAL -->
-<div id="chatModal" class="modal-backdrop" style="display:none" role="dialog" aria-modal="true">
-  <div class="modal" style="max-width:720px">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3>Support Chat</h3>
-      <div>
-        <button class="btn secondary" id="btnVoiceToggle"><i class="fa-solid fa-microphone"></i> Voice</button>
-        <button id="closeChat" class="btn">Close</button>
-      </div>
-    </div>
-    <div id="chatArea" style="margin-top:.8rem;max-height:360px;overflow:auto;padding:.5rem;border-radius:8px;background:#fbfdff;border:1px solid rgba(2,6,23,.03)" aria-live="polite"></div>
-    <form id="chatForm" style="margin-top:.6rem;display:flex;gap:.5rem">
-      <input id="chatInput" class="input" placeholder="Describe your issue..." aria-label="Chat input"/>
-      <button class="btn" type="submit">Send</button>
-    </form>
-  </div>
-</div>
-
-<div id="toasts" aria-live="polite" aria-atomic="true"></div>
-
-<script>
-/*
-  index.html - DeutscheGlobal Bank Demo
-  - Put sw.js & manifest.json at repo root (I provide them below)
-  - This script implements:
-    - IndexedDB (with localStorage fallback)
-    - Auth (register/login), admin access (logo x3 + 'admin/admin111')
-    - Admin CRUD, transaction approval/reject
-    - CSV/JSON export & import
-    - EmailJS integration hook
-    - Push mock and WebSocket stub
-    - PDF receipts via jsPDF
-    - Voice chat (Web Speech API)
-    - Accessibility focus trapping & keyboard nav
-*/
-
-// Utility
-const uid=(n=8)=>{const c='abcdefghijklmnopqrstuvwxyz0123456789';let s='';for(let i=0;i<n;i++)s+=c[Math.floor(Math.random()*c.length)];return s};
-const now=()=>new Date().toISOString();
-const toast=(m,t='info',time=3200)=>{const el=document.createElement('div');el.className='toast';el.textContent=m;if(t==='success')el.style.background='#10b981';if(t==='error')el.style.background='#ef4444';document.getElementById('toasts').appendChild(el);setTimeout(()=>el.remove(),time);};
-async function sha256(str){const enc=new TextEncoder();const data=enc.encode(str);const h=await crypto.subtle.digest('SHA-256',data);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('');}
-
-// IndexedDB wrapper
-const DB=(function(){const DB_NAME='DGBankDemoV2',DB_VER=1;let db=null;
-function open(){return new Promise((res,rej)=>{if(db)res(db);const req=indexedDB.open(DB_NAME,DB_VER);req.onupgradeneeded=e=>{const idb=e.target.result; if(!idb.objectStoreNames.contains('users')){const s=idb.createObjectStore('users',{keyPath:'id'});s.createIndex('email','email',{unique:true});} if(!idb.objectStoreNames.contains('accounts')){const s=idb.createObjectStore('accounts',{keyPath:'id'});s.createIndex('userId','userId',{});s.createIndex('accountNumber','accountNumber',{unique:true});} if(!idb.objectStoreNames.contains('transactions')){idb.createObjectStore('transactions',{keyPath:'id'});} if(!idb.objectStoreNames.contains('supportTickets')){idb.createObjectStore('supportTickets',{keyPath:'id'});} if(!idb.objectStoreNames.contains('auditLogs')){idb.createObjectStore('auditLogs',{keyPath:'id'});} };req.onsuccess=e=>{db=e.target.result;res(db)};req.onerror=e=>{console.warn('IDB open err',e);rej(e)} })}
-
-async function txn(stores,mode='readonly'){const dbInst=await open();const tx=dbInst.transaction(stores,mode);const storesObj={};for(const s of stores)storesObj[s]=tx.objectStore(s);return {tx,stores:storesObj,complete:new Promise((res,rej)=>{tx.oncomplete=()=>res();tx.onerror=e=>rej(e);tx.onabort=e=>rej(e)})}} 
-
-return {
-  add:async function(store,obj){try{const {stores}=await txn([store],'readwrite');return new Promise((res,rej)=>{const r=stores[store].add(obj);r.onsuccess=()=>res(obj);r.onerror=e=>rej(e)})}catch(e){console.warn('DB add fallback',e);const arr=JSON.parse(localStorage.getItem(store)||'[]');arr.push(obj);localStorage.setItem(store,JSON.stringify(arr));return obj}},
-  put:async function(store,obj){const {stores}=await txn([store],'readwrite');return new Promise((res,rej)=>{const r=stores[store].put(obj);r.onsuccess=()=>res(obj);r.onerror=e=>rej(e)})},
-  get:async function(store,key){const {stores}=await txn([store],'readonly');return new Promise((res,rej)=>{const r=stores[store].get(key);r.onsuccess=()=>res(r.result);r.onerror=e=>rej(e)})},
-  getAll:async function(store){try{const {stores}=await txn([store],'readonly');return new Promise((res,rej)=>{const r=stores[store].getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=e=>rej(e)})}catch(e){return JSON.parse(localStorage.getItem(store)||'[]')}},
-  delete:async function(store,key){const {stores}=await txn([store],'readwrite');return new Promise((res,rej)=>{const r=stores[store].delete(key);r.onsuccess=()=>res();r.onerror=e=>rej(e)})},
-  clear:async function(store){const {stores}=await txn([store],'readwrite');return new Promise((res,rej)=>{const r=stores[store].clear();r.onsuccess=()=>res();r.onerror=e=>rej(e)})}
-}})();
-
-// App state
-const App={currentUser:null,stocks:{},fx:{EUR:1,USD:1.09,GBP:0.86},symbols:['DAX','DBX','BMW','SAP','BAYN']};
-
-// Seed demo data (if empty)
-async function seedDemo(){
-  const users=await DB.getAll('users');
-  if(users.length>0) return;
-  const adminHash=await sha256('admin');
-  const superadmin={id:'u_superadmin',email:'admin@deutscheglobal.bank',password:adminHash,firstName:'System',lastName:'Admin',phone:'+49-0',country:'DE',accountType:'admin',status:'active',createdAt:now(),lastLogin:null,twoFactorEnabled:false,role:'superadmin'};
-  await DB.add('users',superadmin);
-  const names=[['Lukas','Müller'],['Anna','Schmidt'],['Max','Becker'],['Sophie','Fischer'],['Paul','Weber'],['Emma','Wagner'],['Noah','Schroeder'],['Mia','Klein'],['Lena','Richter'],['Jonas','Krause']];
-  for(let i=0;i<names.length;i++){
-    const fn=names[i][0], ln=names[i][1];
-    const email=(fn+'.'+ln+'@example.com').toLowerCase();
-    const pass=await sha256('Password123!');
-    const user={id:'u_'+uid(8),email,password:pass,firstName:fn,lastName:ln,phone:'+49-30-'+(1000000+i),country:'DE',accountType:'personal',status:'active',createdAt:now(),lastLogin:null,twoFactorEnabled:false,role:'user'};
-    await DB.add('users',user);
-    const acc={id:'a_'+uid(8),userId:user.id,accountNumber:'DE'+Math.floor(10000000+Math.random()*89999999),accountType:(i%3===0?'business':'checking'),balance:Math.round((Math.random()*9000+200)*100)/100,currency:'EUR',status:'active',createdAt:now()};
-    await DB.add('accounts',acc);
-  }
-  const accounts=await DB.getAll('accounts');
-  for(let i=0;i<60;i++){
-    const from=accounts[Math.floor(Math.random()*accounts.length)];
-    let to=accounts[Math.floor(Math.random()*accounts.length)];
-    if(to.id===from.id) to={id:'external_'+uid(6),accountNumber:'EXT-'+uid(6)};
-    const amt=Math.round((Math.random()*500+5)*100)/100;
-    const tx={id:'t_'+uid(10),fromAccountId:from.id,toAccountId:to.id,amount:amt,currency:'EUR',type:Math.random()>0.7?'payment':'transfer',status:Math.random()>0.5?'completed':'pending',description:'Sample',createdAt:now(),processedAt:null,adminNotes:''};
-    await DB.add('transactions',tx);
-    if(tx.status==='completed'){
-      const f=accounts.find(a=>a.id===from.id); if(f){f.balance=Math.round((f.balance-amt)*100)/100; await DB.put('accounts',f);}
-      if(to.id && to.id.startsWith('a_')){const t=accounts.find(a=>a.id===to.id); if(t){t.balance=Math.round((t.balance+amt)*100)/100; await DB.put('accounts',t);}}
+    // Utilities
+    const uid = (n=8) => { const chars='abcdefghijklmnopqrstuvwxyz0123456789'; let s=''; for(let i=0;i<n;i++) s+=chars[Math.floor(Math.random()*chars.length)]; return s; };
+    const nowISO = () => new Date().toISOString();
+    function showToast(msg, type='info', t=3000){
+      const host = document.getElementById('toastHost');
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = msg;
+      el.style.padding = '.65rem .9rem';
+      el.style.borderRadius = '10px';
+      el.style.background = type==='success' ? '#10b981' : type==='error' ? '#ef4444' : 'var(--primary)';
+      el.style.color = '#fff';
+      el.style.marginTop = '.5rem';
+      host.appendChild(el);
+      setTimeout(()=>el.remove(), t);
     }
-  }
-  const st={id:'s_'+uid(8),userId:(await DB.getAll('users'))[2].id,subject:'Card blocked',message:'My virtual card was blocked.',status:'open',priority:'high',createdAt:now(),adminResponse:'',respondedAt:null};
-  await DB.add('supportTickets',st);
-  toast('Demo data seeded','success',2600);
-}
 
-// Auth & session
-async function registerUser(payload){
-  if(!payload.email||!payload.password) throw new Error('Email & password required');
-  const all=await DB.getAll('users'); if(all.some(u=>u.email===payload.email)) throw new Error('Email already registered');
-  const id='u_'+uid(8);
-  const user={id,email:payload.email,password:payload.password,firstName:payload.firstName||'',lastName:payload.lastName||'',phone:payload.phone||'',country:payload.country||'DE',accountType:'personal',status:'pending',createdAt:now(),lastLogin:null,twoFactorEnabled:false,role:'user'};
-  await DB.add('users',user);
-  const acc={id:'a_'+uid(8),userId:id,accountNumber:'DE'+Math.floor(10000000+Math.random()*89999999),accountType:'checking',balance:0,currency:'EUR',status:'active',createdAt:now()};
-  await DB.add('accounts',acc);
-  toast('Account created — sign in','success');
-  return user;
-}
-async function signIn(email,passwordPlain){
-  const pwHash=await sha256(passwordPlain);
-  const users=await DB.getAll('users');
-  const u=users.find(x=>x.email.toLowerCase()===email.toLowerCase() && x.password===pwHash);
-  if(!u) throw new Error('Invalid credentials');
-  u.lastLogin=now(); await DB.put('users',u);
-  App.currentUser=u; localStorage.setItem('session',JSON.stringify({userId:u.id,ts:Date.now()}));
-  return u;
-}
-function signOut(){
-  App.currentUser=null; localStorage.removeItem('session'); document.getElementById('appShell').style.display='none'; toast('Logged out','info');
-}
+    // SHA-256 helper for client-side hashing
+    async function sha256(hexInput) {
+      const enc = new TextEncoder();
+      const data = enc.encode(hexInput);
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
 
-// Transaction processing & admin control
-async function processTransaction(tx){
-  const accounts=await DB.getAll('accounts');
-  const from=accounts.find(a=>a.id===tx.fromAccountId); if(!from) throw new Error('From account not found');
-  if(from.balance < tx.amount){ tx.status='failed'; tx.adminNotes='Insufficient funds'; await DB.put('transactions',tx); return tx; }
-  from.balance = Math.round((from.balance - tx.amount) * 100)/100; await DB.put('accounts',from);
-  const to = accounts.find(a=>a.id===tx.toAccountId); if(to){ to.balance = Math.round((to.balance + tx.amount)*100)/100; await DB.put('accounts',to); }
-  tx.status='completed'; tx.processedAt = now(); await DB.put('transactions',tx); await DB.add('auditLogs',{id:'al_'+uid(8),action:'processTransaction',data:tx,createdAt:now()});
-  generatePdfReceipt(tx);
-  return tx;
-}
+    // Minimal IndexedDB wrapper
+    const DB = (function(){
+      const DBNAME = 'DGBank_Prod_v1', DBVER = 1;
+      let db = null;
+      function open(){
+        return new Promise((resolve,reject)=>{
+          if(db) return resolve(db);
+          const r = indexedDB.open(DBNAME, DBVER);
+          r.onupgradeneeded = (ev) => {
+            const idb = ev.target.result;
+            if(!idb.objectStoreNames.contains('users')){
+              const s = idb.createObjectStore('users', { keyPath: 'id' });
+              s.createIndex('email', 'email', { unique: true });
+            }
+            if(!idb.objectStoreNames.contains('accounts')){
+              const s = idb.createObjectStore('accounts', { keyPath: 'id' });
+              s.createIndex('userId','userId', { unique: false });
+              s.createIndex('accountNumber','accountNumber', { unique: true });
+            }
+            if(!idb.objectStoreNames.contains('transactions')){
+              idb.createObjectStore('transactions', { keyPath: 'id' });
+            }
+            if(!idb.objectStoreNames.contains('audit')){
+              idb.createObjectStore('audit', { keyPath: 'id' });
+            }
+          };
+          r.onsuccess = (e) => { db = e.target.result; resolve(db); };
+          r.onerror = (e) => { console.error('DB open err',e); reject(e); };
+        });
+      }
+      async function tx(storeNames, mode='readonly'){
+        const d = await open();
+        const t = d.transaction(storeNames, mode);
+        const stores = {};
+        for(const s of storeNames) stores[s] = t.objectStore(s);
+        return { t, stores, complete: new Promise((res,rej)=>{ t.oncomplete=()=>res(); t.onerror=e=>rej(e); t.onabort=e=>rej(e); })};
+      }
+      return {
+        add: async (store, obj) => {
+          try{
+            const { stores } = await tx([store], 'readwrite');
+            return new Promise((res,rej)=>{ const r = stores[store].add(obj); r.onsuccess = ()=>res(obj); r.onerror=e=>rej(e); });
+          }catch(e){
+            // fallback to localStorage for resilience (not recommended for prod)
+            const arr = JSON.parse(localStorage.getItem(store)||'[]'); arr.push(obj); localStorage.setItem(store, JSON.stringify(arr)); return obj;
+          }
+        },
+        put: async (store, obj) => {
+          const { stores } = await tx([store],'readwrite');
+          return new Promise((res,rej)=>{ const r = stores[store].put(obj); r.onsuccess = ()=>res(obj); r.onerror=e=>rej(e); });
+        },
+        get: async (store, key) => {
+          const { stores } = await tx([store], 'readonly');
+          return new Promise((res,rej)=>{ const r = stores[store].get(key); r.onsuccess = ()=>res(r.result); r.onerror = e=>rej(e); });
+        },
+        getAll: async (store) => {
+          try{
+            const { stores } = await tx([store], 'readonly');
+            return new Promise((res,rej)=>{ const r = stores[store].getAll(); r.onsuccess = ()=>res(r.result||[]); r.onerror=e=>rej(e); });
+          }catch(e){
+            return JSON.parse(localStorage.getItem(store)||'[]');
+          }
+        },
+        delete: async (store, key) => {
+          const { stores } = await tx([store], 'readwrite');
+          return new Promise((res,rej)=>{ const r=stores[store].delete(key); r.onsuccess=()=>res(); r.onerror=e=>rej(e); });
+        },
+        clear: async (store) => {
+          const { stores } = await tx([store], 'readwrite');
+          return new Promise((res,rej)=>{ const r=stores[store].clear(); r.onsuccess=()=>res(); r.onerror=e=>rej(e); });
+        }
+      };
+    })();
 
-async function adminTransactionControl(transactionId, action, notes=''){
-  const txs = await DB.getAll('transactions'); const tx = txs.find(t=>t.id===transactionId);
-  if(!tx) throw new Error('Transaction not found');
-  if(action === 'approve'){
-    tx.adminNotes = notes; tx.status='processing'; await DB.put('transactions',tx);
-    try{ await processTransaction(tx); toast('Transaction approved & processed','success'); }
-    catch(e){ toast('Processing failed: '+e.message,'error'); tx.status='failed'; tx.adminNotes = e.message; await DB.put('transactions',tx); }
-  } else if(action === 'reject'){ tx.status='declined'; tx.adminNotes = notes; tx.processedAt = now(); await DB.put('transactions',tx); toast('Transaction declined','info'); }
-  else if(action === 'flag'){ tx.status='pending'; tx.adminNotes = notes; await DB.put('transactions',tx); toast('Transaction flagged','info'); }
-  renderAdminTables(); refreshDashboard();
-}
-
-// PDF generation using jsPDF
-function generatePdfReceipt(tx){
-  try{
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFontSize(16); doc.text('DeutscheGlobal Bank',14,20);
-    doc.setFontSize(11); doc.text('Transaction Receipt',14,30);
-    doc.setFontSize(10);
-    doc.text(`Transaction ID: ${tx.id}`,14,40);
-    doc.text(`Date: ${tx.processedAt || tx.createdAt}`,14,46);
-    doc.text(`From: ${tx.fromAccountId}`,14,52);
-    doc.text(`To: ${tx.toAccountId}`,14,58);
-    doc.text(`Amount: ${tx.amount} ${tx.currency}`,14,64);
-    doc.text(`Status: ${tx.status}`,14,70);
-    if(tx.adminNotes) doc.text(`Admin notes: ${tx.adminNotes}`,14,76);
-    doc.save(`receipt_${tx.id}.pdf`);
-  }catch(e){ console.error('PDF error',e); toast('PDF generation failed','error'); }
-}
-
-// Stock simulation & ticker
-function updateStockPrices(){
-  App.symbols.forEach(sym=>{ if(!App.stocks[sym]) App.stocks[sym] = { price: Math.round((50 + Math.random()*250)*100)/100 }; const change=(Math.random()*4 - 2)/100; App.stocks[sym].price = Math.round((App.stocks[sym].price * (1+change))*100)/100; });
-  const ticker = document.getElementById('stockTicker'); if(ticker){ ticker.innerHTML=''; App.symbols.forEach(sym=>{ const el=document.createElement('div'); el.style.padding='4px 8px'; el.style.borderRadius='8px'; el.style.background='linear-gradient(90deg, rgba(0,0,0,0.02), rgba(255,255,255,0.02))'; el.style.fontSize='0.9rem'; el.innerHTML = `<strong>${sym}</strong> ${App.stocks[sym].price.toFixed(2)}`; ticker.appendChild(el); }); }
-}
-setInterval(updateStockPrices,30000); updateStockPrices();
-
-// UI rendering & interactions
-async function renderSidebarUser(){ const u = App.currentUser; const summ = document.getElementById('userSummary'); const accounts = (await DB.getAll('accounts')).filter(a=>a.userId===u.id); const total = accounts.reduce((s,a)=>s+a.balance,0); summ.innerHTML = `<div style="font-weight:700">${u.firstName} ${u.lastName}</div><div style="color:var(--muted);font-size:.9rem">${accounts.length} accounts • ${new Intl.NumberFormat('en-GB',{style:'currency',currency:'EUR'}).format(Math.round(total*100)/100)}</div>`; }
-
-async function showSection(name){
-  const content = document.getElementById('sectionContent');
-  document.querySelectorAll('.side-item').forEach(si=> si.classList.toggle('active', si.dataset.section===name));
-  if(name==='overview'){
-    const accounts = (await DB.getAll('accounts')).filter(a=>a.userId===App.currentUser.id);
-    const txs = (await DB.getAll('transactions')).filter(t=> accounts.map(a=>a.id).includes(t.fromAccountId) || accounts.map(a=>a.id).includes(t.toAccountId)).slice(0,8);
-    content.innerHTML = '';
-    const card = document.createElement('div'); card.className='section-card';
-    card.innerHTML = `<h3>Welcome back, ${App.currentUser.firstName}</h3><p style="color:var(--muted)">Overview of your accounts and recent activity.</p>`;
-    const accWrap = document.createElement('div'); accWrap.style.display='flex'; accWrap.style.gap='.8rem'; accWrap.style.marginTop='.8rem'; accWrap.style.flexWrap='wrap';
-    accounts.forEach(a=>{ const d=document.createElement('div'); d.style.flex='1'; d.style.minWidth='200px'; d.style.background='linear-gradient(90deg,#fff,#fbfdff)'; d.style.padding='1rem'; d.style.borderRadius='10px'; d.style.boxShadow='var(--shadow)'; d.innerHTML = `<div style="display:flex;justify-content:space-between"><div>${a.accountType.toUpperCase()}</div><div style="color:var(--muted)">${a.accountNumber}</div></div><div style="font-weight:800;font-size:1.3rem;margin-top:.6rem">${new Intl.NumberFormat('en-GB',{style:'currency',currency:a.currency}).format(a.balance)}</div><div style="margin-top:.6rem"><button class="btn" onclick="openTransferModal('${a.id}')">Send</button></div>`; accWrap.appendChild(d); });
-    card.appendChild(accWrap); content.appendChild(card);
-    const txCard=document.createElement('div'); txCard.className='section-card'; txCard.innerHTML='<h4>Recent Transactions</h4>';
-    const table=document.createElement('table'); table.className='table'; table.innerHTML='<thead><tr><th>When</th><th>From</th><th>To</th><th>Amount</th><th>Status</th></tr></thead>';
-    const bb=document.createElement('tbody'); txs.forEach(t=>{ const r=document.createElement('tr'); r.innerHTML = `<td>${new Date(t.createdAt).toLocaleString()}</td><td>${t.fromAccountId}</td><td>${t.toAccountId}</td><td>${new Intl.NumberFormat('en-GB',{style:'currency',currency:t.currency}).format(t.amount)}</td><td>${t.status}</td>`; bb.appendChild(r); });
-    table.appendChild(bb); txCard.appendChild(table); content.appendChild(txCard);
-  } else if(name==='accounts'){ const accounts = (await DB.getAll('accounts')).filter(a=>a.userId===App.currentUser.id); content.innerHTML = `<div class="section-card"><h4>Your Accounts</h4><table class="table"><thead><tr><th>Type</th><th>Number</th><th>Balance</th><th>Actions</th></tr></thead><tbody>${accounts.map(a=>`<tr><td>${a.accountType}</td><td>${a.accountNumber}</td><td>${new Intl.NumberFormat('en-GB',{style:'currency',currency:a.currency}).format(a.balance)}</td><td><button class="btn" onclick="openTransferModal('${a.id}')">Send</button></td></tr>`).join('')}</tbody></table></div>`; }
-  else if(name==='transfer'){ const accs=(await DB.getAll('accounts')).filter(a=>a.userId===App.currentUser.id); content.innerHTML = `<div class="section-card"><h4>Send Money</h4><div style="display:flex;gap:.6rem"><select id="transferFromInline" class="input">${accs.map(a=>' <option value="'+a.id+'">'+a.accountNumber+' • '+new Intl.NumberFormat('en-GB',{style:'currency',currency:a.currency}).format(a.balance) +'</option>').join('')}</select><input id="transferToInline" class="input" placeholder="Recipient account"/></div><div style="display:flex;gap:.6rem;margin-top:.6rem"><input id="transferAmountInline" type="number" class="input" placeholder="Amount"/><select id="transferCurrencyInline" class="input" style="max-width:160px"><option>EUR</option><option>USD</option></select></div><div style="margin-top:.6rem;display:flex;justify-content:flex-end"><button class="btn" onclick="submitInlineTransfer()">Send</button></div></div>`; }
-  else if(name==='transactions'){ const accounts=(await DB.getAll('accounts')).filter(a=>a.userId===App.currentUser.id); const txs=(await DB.getAll('transactions')).filter(t=>accounts.map(a=>a.id).includes(t.fromAccountId) || accounts.map(a=>a.id).includes(t.toAccountId)); content.innerHTML = `<div class="section-card"><h4>All Transactions</h4><table class="table"><thead><tr><th>ID</th><th>Date</th><th>From</th><th>To</th><th>Amount</th><th>Status</th><th>Receipt</th></tr></thead><tbody>${txs.map(t=>`<tr><td>${t.id}</td><td>${new Date(t.createdAt).toLocaleString()}</td><td>${t.fromAccountId}</td><td>${t.toAccountId}</td><td>${new Intl.NumberFormat('en-GB',{style:'currency',currency:t.currency}).format(t.amount)}</td><td>${t.status}</td><td>${t.status==='completed'?`<button class="btn" onclick='generatePdfReceipt(${JSON.stringify(t).replace(/"/g,"&quot;")})'>PDF</button>`:'-'}</td></tr>`).join('')}</tbody></table></div>`; }
-  else if(name==='investments'){ content.innerHTML = `<div class="section-card"><h4>Investment Portfolio (Mock)</h4><p style="color:var(--muted)">Simulated portfolio with stock price updates (every 30s)</p><div style="display:flex;gap:.6rem;flex-wrap:wrap">${App.symbols.map(sym=>`<div style="background:#fff;padding:1rem;border-radius:10px;min-width:160px;box-shadow:var(--shadow)"><div style="font-weight:700">${sym}</div><div style="margin-top:.4rem">${App.stocks[sym]?App.stocks[sym].price.toFixed(2):'--'} EUR</div><div style="margin-top:.6rem"><button class="btn secondary" onclick="buyMock('${sym}')">Buy</button></div></div>`).join('')}</div></div>`; }
-  else if(name==='loans'){ content.innerHTML = `<div class="section-card"><h4>Loan Calculator</h4><div style="display:flex;gap:.6rem"><input id="loanAmount" class="input" placeholder="Loan amount"/><input id="loanTerm" class="input" placeholder="Months" value="24"/></div><div style="display:flex;gap:.6rem;margin-top:.6rem;justify-content:flex-end"><button class="btn" onclick="calcLoan()">Calculate</button></div><div id="loanResult" style="margin-top:.6rem;color:var(--muted)"></div></div>`; }
-  else if(name==='support'){ content.innerHTML = `<div class="section-card"><h4>Support</h4><p style="color:var(--muted)">Start a chat with our support assistant (voice-enabled).</p><div style="margin-top:.6rem"><button class="btn" id="openChatBtn">Open Chat</button></div></div>`; setTimeout(()=>document.getElementById('openChatBtn').addEventListener('click',()=>openChat()),10); }
-  else if(name==='settings'){ content.innerHTML = `<div class="section-card"><h4>Settings</h4><div style="display:flex;gap:.6rem"><div style="flex:1"><label class="skip">Language</label><select id="selLang" class="input"><option>EN</option><option>DE</option><option>FR</option></select></div><div style="flex:1"><label class="skip">Theme</label><div style="display:flex;gap:.6rem;margin-top:.4rem"><button class="btn secondary" onclick="document.body.style.background='linear-gradient(180deg,#f3f6fb 0%,var(--bg) 100%)'">Light</button><button class="btn" onclick="document.body.style.background='#031024'">Dark</button></div></div></div></div>`; }
-}
-
-// Transfer handlers
-window.openTransferModal = async function(fromId){ document.getElementById('transferModal').style.display='flex'; const sel=document.getElementById('fromAccount'); sel.innerHTML=''; const accs=(await DB.getAll('accounts')).filter(a=>a.userId===App.currentUser.id); accs.forEach(a=>{ const o=document.createElement('option'); o.value=a.id; o.textContent=`${a.accountNumber} • ${new Intl.NumberFormat('en-GB',{style:'currency',currency:a.currency}).format(a.balance)}`; sel.appendChild(o); }); if(fromId) sel.value=fromId; }
-window.closeTransfer = ()=> document.getElementById('transferModal').style.display='none';
-document.getElementById('transferForm').addEventListener('submit', async function(e){ e.preventDefault(); const from=document.getElementById('fromAccount').value; const to=document.getElementById('toAccount').value; const amount=parseFloat(document.getElementById('transferAmount').value||0); const currency=document.getElementById('transferCurrency').value; const desc=document.getElementById('transferDesc').value||''; if(amount<=0) return toast('Enter a valid amount','error'); const tx={ id:'t_'+uid(10), fromAccountId:from, toAccountId:to, amount, currency, type:'transfer', status:'pending', description:desc, createdAt:now(), processedAt:null, adminNotes:'' }; await DB.add('transactions',tx); toast('Transfer created and pending admin approval','info'); closeTransfer(); showSection('transactions'); });
-
-// Inline transfer
-window.submitInlineTransfer = async function(){ const from=document.getElementById('transferFromInline').value; const to=document.getElementById('transferToInline').value; const amount=parseFloat(document.getElementById('transferAmountInline').value||0); const currency=document.getElementById('transferCurrencyInline').value; if(amount<=0) return toast('Enter valid amount','error'); const tx={id:'t_'+uid(10),fromAccountId:from,toAccountId:to,amount,currency,type:'transfer',status:'pending',description:'User initiated',createdAt:now(),processedAt:null,adminNotes:''}; await DB.add('transactions',tx); toast('Transfer queued','info'); showSection('transactions'); }
-
-// Auth UI wiring
-document.getElementById('openSignIn').addEventListener('click', ()=> openAuth());
-document.getElementById('ctaOpenRegister').addEventListener('click', ()=> openAuth('register'));
-function openAuth(mode='signin'){ document.getElementById('authModal').style.display='flex'; document.getElementById('authTitle').textContent = mode==='signin'?'Sign In':'Register'; document.getElementById('signinForm').style.display = mode==='signin'?'block':'none'; document.getElementById('registerForm').style.display = mode==='signin'?'none':'block'; setTimeout(()=>document.getElementById('si_email').focus(),60); }
-document.getElementById('closeAuth').addEventListener('click', ()=> document.getElementById('authModal').style.display='none');
-document.getElementById('showSignIn').addEventListener('click', ()=> { document.getElementById('signinForm').style.display='block'; document.getElementById('registerForm').style.display='none'; document.getElementById('authTitle').textContent='Sign In' });
-
-document.getElementById('signinForm').addEventListener('submit', async function(e){ e.preventDefault(); const email=document.getElementById('si_email').value.trim(); const pw=document.getElementById('si_password').value; try{ const u = await signIn(email,pw); App.currentUser = u; toast('Signed in','success'); document.getElementById('authModal').style.display='none'; document.getElementById('appShell').style.display='grid'; await renderSidebarUser(); await showSection('overview'); }catch(err){ toast(err.message,'error'); } });
-
-document.getElementById('registerForm').addEventListener('submit', async function(e){ e.preventDefault(); const pw=document.getElementById('r_password').value; const pw2=document.getElementById('r_password_confirm').value; if(pw!==pw2) return toast('Passwords do not match','error'); if(pw.length <8) return toast('Password must be 8+ chars','error'); const payload={ firstName:document.getElementById('r_first').value.trim(), lastName:document.getElementById('r_last').value.trim(), email:document.getElementById('r_email').value.trim(), phone:document.getElementById('r_phone').value.trim(), country:document.getElementById('r_country').value, password: await sha256(pw)}; try{ await registerUser(payload); document.getElementById('registerForm').reset(); document.getElementById('signinForm').style.display='block'; document.getElementById('registerForm').style.display='none'; document.getElementById('authTitle').textContent='Sign In'; }catch(e){ toast(e.message,'error'); } });
-
-// Sidebar nav
-document.querySelectorAll('.side-item').forEach(si=> si.addEventListener('click', ()=> showSection(si.dataset.section)));
-
-// Hidden admin access: click logo 3× then enter password
-let logoClicks=0, logoTimer=null;
-const logo=document.getElementById('logo');
-logo.addEventListener('click', async ()=>{ logoClicks++; clearTimeout(logoTimer); logoTimer=setTimeout(()=> logoClicks=0,1200); if(logoClicks>=3){ logoClicks=0; const pwd = prompt('Super Admin access — enter password:'); if(pwd === 'admin/admin111'){ openAdmin(); } else { toast('Invalid admin password','error'); } } });
-logo.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); logo.click(); } });
-
-// Admin functions & tables
-window.openAdmin = async function(){ document.getElementById('adminModal').style.display='flex'; renderAdminTables(); };
-document.getElementById('closeAdmin').addEventListener('click', ()=> document.getElementById('adminModal').style.display='none');
-
-async function renderAdminTables(){
-  const users = await DB.getAll('users'); const txs=await DB.getAll('transactions');
-  const uT = document.querySelector('#adminUsersTable tbody'); uT.innerHTML = users.map(u=>`<tr><td>${u.firstName} ${u.lastName}</td><td>${u.email}</td><td>${u.role}</td><td><button class="btn secondary" onclick="adminEditUser('${u.id}')">Edit</button> <button class="btn" onclick="adminDeleteUser('${u.id}')">Delete</button></td></tr>`).join('');
-  const tT = document.querySelector('#adminTransactionsTable tbody'); tT.innerHTML = txs.map(t=>`<tr><td>${t.id}</td><td>${t.fromAccountId}</td><td>${t.toAccountId}</td><td>${new Intl.NumberFormat('en-GB',{style:'currency',currency:t.currency}).format(t.amount)}</td><td>${t.status}</td><td><button class="btn" onclick="adminTransactionControl('${t.id}','approve')">Approve</button> <button class="btn secondary" onclick="adminTransactionControl('${t.id}','reject')">Reject</button> <button class="btn secondary" onclick="generatePdfReceipt(${JSON.stringify(t).replace(/"/g,'&quot;')})">Receipt</button></td></tr>`).join('');
-}
-
-document.getElementById('btnCreateUser').addEventListener('click', async ()=>{
-  const email = prompt('New user email:'); if(!email) return;
-  const pw = await sha256('Welcome123!');
-  const user = { id:'u_'+uid(8), email, password: pw, firstName:'New', lastName:'User', phone:'', country:'DE', accountType:'personal', status:'active', createdAt:now(), lastLogin:null, twoFactorEnabled:false, role:'user' };
-  await DB.add('users', user);
-  const acc = { id:'a_'+uid(8), userId: user.id, accountNumber:'DE'+Math.floor(10000000+Math.random()*89999999), accountType:'checking', balance:0, currency:'EUR', status:'active', createdAt:now() };
-  await DB.add('accounts', acc);
-  renderAdminTables(); toast('User created','success');
-});
-
-window.adminEditUser = async function(userId){
-  const user = (await DB.getAll('users')).find(u=>u.id===userId); if(!user) return toast('User not found','error');
-  const newName = prompt('Edit full name', `${user.firstName} ${user.lastName}`);
-  if(newName){ const parts=newName.split(' '); user.firstName = parts[0]||user.firstName; user.lastName = parts.slice(1).join(' ')||user.lastName; await DB.put('users', user); renderAdminTables(); toast('User updated','success'); }
-};
-window.adminDeleteUser = async function(userId){
-  if(!confirm('Delete user and associated accounts?')) return;
-  await DB.delete('users', userId);
-  const accounts = await DB.getAll('accounts'); for(const a of accounts.filter(x=>x.userId===userId)) await DB.delete('accounts', a.id);
-  renderAdminTables(); toast('User deleted','info');
-};
-
-// Export / Import (Admin)
-document.getElementById('btnExport').addEventListener('click', async ()=>{
-  const all = { users: await DB.getAll('users'), accounts: await DB.getAll('accounts'), transactions: await DB.getAll('transactions'), supportTickets: await DB.getAll('supportTickets'), auditLogs: await DB.getAll('auditLogs') };
-  const b = new Blob([JSON.stringify(all,null,2)],{type:'application/json'}); const url=URL.createObjectURL(b); const a=document.createElement('a'); a.href=url; a.download='dgbank_export.json'; a.click(); URL.revokeObjectURL(url);
-});
-
-document.getElementById('exportJSON').addEventListener('click', async ()=>{
-  const all = { users: await DB.getAll('users'), accounts: await DB.getAll('accounts'), transactions: await DB.getAll('transactions'), supportTickets: await DB.getAll('supportTickets') };
-  const b = new Blob([JSON.stringify(all,null,2)],{type:'application/json'}); const url=URL.createObjectURL(b); const a=document.createElement('a'); a.href=url; a.download='dgbank_backup.json'; a.click(); URL.revokeObjectURL(url);
-});
-
-document.getElementById('exportCSV').addEventListener('click', async ()=>{
-  const users = await DB.getAll('users');
-  const csv = 'id,firstName,lastName,email,role,createdAt\n' + users.map(u=>[u.id,u.firstName,u.lastName,u.email,u.role,u.createdAt].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const b=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(b); const a=document.createElement('a'); a.href=url; a.download='users.csv'; a.click(); URL.revokeObjectURL(url);
-});
-
-document.getElementById('doImport').addEventListener('click', async ()=>{
-  const f = document.getElementById('importFile').files[0]; if(!f) return toast('Choose a file','error');
-  const txt = await f.text();
-  if(f.name.endsWith('.json')){
-    try{
-      const obj = JSON.parse(txt);
-      if(obj.users){ await DB.clear('users'); for(const u of obj.users) await DB.add('users',u); }
-      if(obj.accounts){ await DB.clear('accounts'); for(const a of obj.accounts) await DB.add('accounts',a); }
-      if(obj.transactions){ await DB.clear('transactions'); for(const t of obj.transactions) await DB.add('transactions',t); }
-      toast('Import complete','success'); renderAdminTables(); refreshDashboard();
-    }catch(e){ toast('Import failed','error'); }
-  } else if(f.name.endsWith('.csv')){
-    const lines = txt.split(/\r?\n/); const hdr = lines.shift().split(',').map(h=>h.replace(/(^\"|\"$)/g,'')); const items = lines.map(l=>{ const cols=l.split(',').map(c=>c.replace(/(^\"|\"$)/g,'')); const obj={}; hdr.forEach((h,i)=>obj[h]=cols[i]); return obj; });
-    for(const it of items){ if(it.email){ const p=await sha256('Imported123!'); const u={ id:it.id||'u_'+uid(8), email:it.email, password:p, firstName:it.firstName||'', lastName:it.lastName||'', role:it.role||'user', createdAt:it.createdAt||now() }; await DB.add('users',u); } }
-    toast('CSV import done','success'); renderAdminTables(); refreshDashboard();
-  } else toast('Unsupported file','error');
-});
-
-// EmailJS config + send
-document.getElementById('saveEmailCfg').addEventListener('click', ()=>{
-  const cfg = { service_id: document.getElementById('email_service').value.trim(), template_id: document.getElementById('email_template').value.trim(), public_key: document.getElementById('email_public').value.trim() };
-  localStorage.setItem('emailjs_cfg', JSON.stringify(cfg));
-  if(cfg.public_key) try{ emailjs.init(cfg.public_key); }catch(e){}
-  toast('EmailJS config saved','success');
-});
-document.getElementById('sendTestEmail').addEventListener('click', async ()=>{
-  const cfg = JSON.parse(localStorage.getItem('emailjs_cfg')||'{}');
-  if(!cfg.service_id || !cfg.template_id || !cfg.public_key) return toast('Set EmailJS config first','error');
-  try{
-    await emailjs.send(cfg.service_id, cfg.template_id, { to_email: App.currentUser?App.currentUser.email : 'test@example.com', subject: 'Test email from DGB Demo', message: 'This is a test.'}, cfg.public_key);
-    toast('Email sent (check inbox)','success');
-  }catch(e){ console.error(e); toast('Email failed','error'); }
-});
-document.getElementById('btnEmailTest').addEventListener('click', ()=>{ const cfg = JSON.parse(localStorage.getItem('emailjs_cfg')||'{}'); if(cfg.service_id && cfg.public_key) toast('EmailJS configured','success'); else toast('EmailJS not configured','error'); });
-
-// Push mock & WebSocket stub
-const PushMock = { clients: [], connect(cb){ const id = uid(6); this.clients.push({id,cb}); return ()=>{ this.clients = this.clients.filter(c=>c.id!==id); } }, send(msg){ this.clients.forEach(c=>c.cb(msg)); } };
-window.initWebSocket = function(url){ try{ const ws = new WebSocket(url); ws.onmessage = e => { const msg = JSON.parse(e.data); toast(msg.title||'Push','info'); }; ws.onopen = ()=> toast('WebSocket connected','success'); ws.onerror = ()=> toast('WebSocket error','error'); return ws; }catch(e){ toast('WebSocket init failed, using mock','error'); return { send: ()=>{}, close: ()=>{} } } };
-window.PushMock = PushMock;
-window.simulatePush = (title,body)=>{ PushMock.send({title,body}); toast(title,'info'); };
-
-// Chat & voice
-let recognition=null, listening=false;
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-if(SR){ recognition = new SR(); recognition.lang='en-US'; recognition.interimResults=false; recognition.onresult = (ev)=>{ const text = ev.results[0][0].transcript; appendChatMessage('You', text); respondBot(text); }; recognition.onend = ()=> { listening=false; document.getElementById('btnVoiceToggle').classList.remove('active'); }; }
-function openChat(){ document.getElementById('chatModal').style.display='flex'; document.getElementById('chatInput').focus(); }
-function closeChat(){ document.getElementById('chatModal').style.display='none'; }
-document.getElementById('openSupport').addEventListener('click', ()=> openChat());
-document.getElementById('closeChat').addEventListener('click', ()=> closeChat());
-document.getElementById('chatForm').addEventListener('submit', e=>{ e.preventDefault(); const text=document.getElementById('chatInput').value.trim(); if(!text) return; document.getElementById('chatInput').value=''; appendChatMessage('You', text); respondBot(text); });
-document.getElementById('btnVoiceToggle').addEventListener('click', function(){ if(!recognition) return toast('Voice not supported','error'); if(listening){ recognition.stop(); listening=false; this.classList.remove('active'); toast('Voice stopped','info'); } else { recognition.start(); listening=true; this.classList.add('active'); toast('Listening...','info'); } });
-
-function appendChatMessage(author, text){ const area=document.getElementById('chatArea'); const el=document.createElement('div'); el.style.margin='6px 0'; el.innerHTML = `<div style="font-size:.8rem;color:${author==='You'?'var(--primary)':'var(--muted)'}"><strong>${author}</strong></div><div style="margin-top:4px">${text}</div>`; area.appendChild(el); area.scrollTop = area.scrollHeight; }
-
-function respondBot(text){ appendChatMessage('Assistant','Thanks! A support agent will review this shortly. (Demo)'); DB.add('supportTickets',{ id:'s_'+uid(8), userId: App.currentUser?App.currentUser.id:'guest', subject: text.slice(0,50), message: text, status:'open', priority:'low', createdAt: now(), adminResponse:'', respondedAt:null }).then(()=> toast('Support ticket created','success')); }
-
-// Loan & invest helpers
-window.calcLoan = function(){ const P=parseFloat(document.getElementById('loanAmount').value||0); const n=parseFloat(document.getElementById('loanTerm').value||12); const r=0.05/12; if(P<=0) return toast('Enter loan amount','error'); const monthly=(P*r)/(1-Math.pow(1+r,-n)); document.getElementById('loanResult').innerHTML = `Estimated monthly payment: <strong>${new Intl.NumberFormat('en-GB',{style:'currency',currency:'EUR'}).format(Math.round(monthly*100)/100)}</strong>`; }
-window.buyMock = function(sym){ toast('Bought 1 share of '+sym,'success'); }
-
-// Admin transaction control exposure (already defined)
-window.adminTransactionControl = adminTransactionControl;
-window.generatePdfReceipt = generatePdfReceipt;
-
-// Refresh dashboard helper
-async function refreshDashboard(){ if(!App.currentUser) return; await renderSidebarUser(); const active = document.querySelector('.side-item.active')?.dataset.section || 'overview'; showSection(active); }
-setInterval(refreshDashboard,6000);
-
-// Small focus-trap for modals (basic)
-function trapFocus(modal){ const focusable = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'; const nodes = modal.querySelectorAll(focusable); const first = nodes[0], last = nodes[nodes.length-1]; modal.addEventListener('keydown', e=>{ if(e.key === 'Tab'){ if(e.shiftKey){ if(document.activeElement === first){ e.preventDefault(); last.focus(); } } else { if(document.activeElement === last){ e.preventDefault(); first.focus(); } } } if(e.key==='Escape'){ modal.style.display='none'; } }); }
-document.querySelectorAll('.modal-backdrop .modal').forEach(m => trapFocus(m));
-
-// keyboard navigation for side items
-document.querySelectorAll('.side-item').forEach(si=> si.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' ') si.click(); }));
-
-// Service worker registration (preferred: separate sw.js at root)
-if('serviceWorker' in navigator){
-  // prefer root /sw.js when present (for GitHub Pages). Fallback to blob creation if not found.
-  (async ()=>{
-    try{
-      // Try to register /sw.js first (the file I provide below)
-      const reg = await navigator.serviceWorker.register('/sw.js');
-      console.log('Service worker registered:', reg.scope);
-    }catch(err){
-      console.warn('sw.js registration failed, trying blob fallback',err);
-      // create blob fallback (less reliable across hosts) - only use if sw.js not available
-      const swCode = `const CACHE_NAME='dgbank-demo-v1';self.addEventListener('install', e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE_NAME).then(c=>{}))});self.addEventListener('activate', e=>{e.waitUntil(self.clients.claim())});self.addEventListener('fetch', e=>{if(e.request.mode==='navigate'){e.respondWith(caches.match('/index.html').then(r=>r||fetch(e.request)).catch(()=>{}));}else{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{if(e.request.method==='GET'){caches.open(CACHE_NAME).then(c=>c.put(e.request,resp.clone()));}return resp}).catch(()=>{})));}});`;
+    /* Seed professional initial data if none exists.
+       NOTE: For production this seeding would not be present.
+       Since you requested a professional feel, seed uses realistic names and images,
+       but these entries are initial test data to let the app run end-to-end.
+    */
+    async function seedIfEmpty(){
       try{
-        const blob = new Blob([swCode],{type:'application/javascript'});
-        const url = URL.createObjectURL(blob);
-        await navigator.serviceWorker.register(url);
-        console.log('Service worker registered via blob fallback');
-      }catch(e){ console.warn('SW blob fallback failed',e); }
+        const users = await DB.getAll('users');
+        if(users.length>0) return;
+        // create a superadmin (hidden access)
+        const adminPassHash = await sha256('admin'); // default admin password for local management
+        await DB.add('users', { id: 'u_superadmin', email: 'admin@deutscheglobal.bank', password: adminPassHash, firstName: 'System', lastName: 'Administrator', role: 'superadmin', createdAt: nowISO(), status: 'active' });
+        // create sample professional users
+        const people = [
+          { first:'Lukas', last:'Müller', email:'lukas.mueller@company.de' },
+          { first:'Anna', last:'Schmidt', email:'anna.schmidt@company.de' },
+          { first:'Max', last:'Becker', email:'max.becker@business.de' },
+          { first:'Sophie', last:'Fischer', email:'sophie.fischer@firm.de' }
+        ];
+        const defaultPassHash = await sha256('Welcome!2025');
+        for(const p of people){
+          const id = 'u_'+uid(8);
+          await DB.add('users', { id, email: p.email, password: defaultPassHash, firstName: p.first, lastName: p.last, role: 'user', createdAt: nowISO(), status:'active' });
+          // create a checking account
+          const acc = { id: 'a_'+uid(9), userId: id, accountNumber: 'DE' + Math.floor(10000000 + Math.random()*89999999), accountType: 'checking', balance: Math.round((Math.random()*9000+1000)*100)/100, currency: 'EUR', status:'active', createdAt: nowISO() };
+          await DB.add('accounts', acc);
+        }
+        showToast('Welcome to DeutscheGlobal — your account experience is ready', 'success', 4000);
+      }catch(e){ console.error('Seed error', e); }
     }
-  })();
-}
 
-// Init: seed data, restore session, wire UI
-(async function init(){
-  await seedDemo();
-  try{
-    const s = JSON.parse(localStorage.getItem('session')||'null');
-    if(s && s.userId){
-      const u = (await DB.getAll('users')).find(x=>x.id===s.userId);
-      if(u){ App.currentUser = u; document.getElementById('appShell').style.display='grid'; await renderSidebarUser(); await showSection('overview'); }
+    /* Auth - register & sign in logic */
+    async function registerUser({ firstName, lastName, email, passwordPlain }){
+      if(!email || !passwordPlain) throw new Error('Email and password are required');
+      const emailLower = email.toLowerCase();
+      const all = await DB.getAll('users');
+      if(all.find(u=>u.email && u.email.toLowerCase()===emailLower)) throw new Error('An account with this email already exists');
+      const id = 'u_'+uid(8);
+      const hashed = await sha256(passwordPlain);
+      const user = { id, email: emailLower, password: hashed, firstName, lastName, role: 'user', status: 'active', createdAt: nowISO() };
+      await DB.add('users', user);
+      // Create a primary checking account
+      const account = { id: 'a_'+uid(9), userId: id, accountNumber: 'DE'+Math.floor(10000000 + Math.random()*89999999), accountType: 'checking', balance: 0.00, currency: 'EUR', status: 'active', createdAt: nowISO() };
+      await DB.add('accounts', account);
+      return user;
     }
-  }catch(e){}
-  document.getElementById('ctaLearn').addEventListener('click', ()=> toast('Explore features by registering and signing in','info'));
-  document.querySelectorAll('.modal-backdrop').forEach(back=> back.addEventListener('click', e=>{ if(e.target===back) back.style.display='none'; }));
-  // Wire quick elements
-  document.getElementById('btnLogout').addEventListener('click', ()=> { signOut(); });
-  document.getElementById('saveEmailCfg').addEventListener('click', ()=>{/* handled above */});
-  // initial admin table render (if admin opened later it'll refresh)
-  // small notification showing ready
-  console.info('DeutscheGlobal Bank demo initialized');
-})();
-</script>
 
+    async function signIn(email, passwordPlain){
+      const users = await DB.getAll('users');
+      const hashed = await sha256(passwordPlain);
+      const user = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase() && u.password === hashed);
+      if(!user) throw new Error('Invalid credentials');
+      // persist session minimally
+      localStorage.setItem('dgb_session', JSON.stringify({ userId: user.id, ts: Date.now() }));
+      return user;
+    }
+
+    async function signOut(){
+      localStorage.removeItem('dgb_session');
+      // reload to show landing; more graceful UI updates in next chunks
+      location.reload();
+    }
+
+    /* UI wiring: auth modal show/hide and submit handlers */
+    (function wireAuthUI(){
+      const authModal = document.getElementById('authModal');
+      const openSignIn = document.getElementById('openSignIn');
+      const ctaRegister = document.getElementById('ctaOpenRegister');
+      const closeAuth = document.getElementById('closeAuth');
+      const btnOpenRegister = document.getElementById('openRegister');
+      const btnBackToSign = document.getElementById('backToSignIn');
+      const btnBackToSign2 = document.getElementById('backToSignIn2');
+      const openForgot = document.getElementById('openForgot');
+      const openContact = document.getElementById('openContact');
+
+      openSignIn.addEventListener('click', ()=>{ openAuth('signin'); });
+      ctaRegister.addEventListener('click', ()=>{ openAuth('register'); });
+      btnOpenRegister.addEventListener('click', ()=>{ openAuth('register'); });
+      closeAuth.addEventListener('click', ()=> { authModal.style.display = 'none'; });
+      if(openForgot) openForgot.addEventListener('click', ()=> openAuth('forgot'));
+      if(openContact) openContact.addEventListener('click', ()=> { showToast('Contact center — please call +49 30 1234 5678', 'info'); });
+
+      function openAuth(mode='signin'){
+        authModal.style.display = 'flex';
+        const formSign = document.getElementById('formSignIn');
+        const formReg = document.getElementById('formRegister');
+        const formForgot = document.getElementById('formForgot');
+        formSign.style.display = mode==='signin' ? 'block' : 'none';
+        formReg.style.display = mode==='register' ? 'block' : 'none';
+        formForgot.style.display = mode==='forgot' ? 'block' : 'none';
+        // focus
+        setTimeout(()=>{ if(mode==='signin') document.getElementById('si_email').focus(); if(mode==='register') document.getElementById('r_first').focus(); }, 120);
+      }
+
+      // Sign in submit
+      document.getElementById('formSignIn').addEventListener('submit', async function(e){
+        e.preventDefault();
+        const email = document.getElementById('si_email').value.trim();
+        const pw = document.getElementById('si_password').value.trim();
+        if(!email || !pw){ showToast('Please provide email and password', 'error'); return; }
+        try{
+          const user = await signIn(email, pw);
+          // basic UI transition; full dashboard will be rendered in chunk 2
+          document.getElementById('appShell').style.display = 'block';
+          document.getElementById('appContent').innerHTML = `<div style="padding:1rem"><h3>Welcome, ${user.firstName} ${user.lastName}</h3><p style="color:var(--muted)">Loading your workspace…</p></div>`;
+          document.getElementById('authModal').style.display = 'none';
+          showToast('Signed in', 'success');
+          // in next chunks we'll populate dashboard; for now, set preview
+          document.getElementById('uNamePreview').textContent = `${user.firstName} ${user.lastName}`;
+          document.getElementById('uMailPreview').textContent = user.email;
+          // trigger dashboard refresh (next chunk)
+        }catch(err){
+          showToast(err.message || 'Sign in failed', 'error');
+        }
+      });
+
+      // Register submit
+      document.getElementById('formRegister').addEventListener('submit', async function(e){
+        e.preventDefault();
+        const first = document.getElementById('r_first').value.trim();
+        const last = document.getElementById('r_last').value.trim();
+        const email = document.getElementById('r_email').value.trim();
+        const pw = document.getElementById('r_password').value.trim();
+        if(!first || !last || !email || pw.length < 8){ showToast('Complete all fields. Password must be at least 8 characters.', 'error'); return; }
+        try{
+          const user = await registerUser({ firstName: first, lastName: last, email, passwordPlain: pw });
+          showToast('Your account has been created — please sign in', 'success');
+          // Move back to sign in automatically
+          openAuth('signin');
+        }catch(err){
+          showToast(err.message || 'Registration failed', 'error');
+        }
+      });
+
+      // Forgot password (basic behavior) — in production integrate with secure email workflows
+      document.getElementById('formForgot').addEventListener('submit', async function(e){
+        e.preventDefault();
+        const email = document.getElementById('f_email').value.trim();
+        if(!email){ showToast('Please enter your email', 'error'); return; }
+        // NOTE: production: trigger secure reset via backend. Here, we show friendly message.
+        showToast('If an account exists with this email, you will receive reset instructions.', 'info');
+        document.getElementById('formForgot').reset();
+        openAuth('signin');
+      });
+
+      // back buttons
+      btnBackToSign.addEventListener('click', ()=> openAuth('signin'));
+      btnBackToSign2.addEventListener('click', ()=> openAuth('signin'));
+    })();
+
+    // Logo triple-click => open admin (hidden access)
+    (function wireAdminSecret(){
+      const logo = document.getElementById('siteLogo');
+      let clicks = 0, timer = null;
+      logo.addEventListener('click', async () => {
+        clicks++;
+        clearTimeout(timer);
+        timer = setTimeout(()=> clicks = 0, 1200);
+        if(clicks >= 3){
+          clicks = 0;
+          const pwd = prompt('Super Admin access — enter password:');
+          if(pwd === 'admin/admin111'){
+            // show admin modal (admin UI will be in chunk 3)
+            // Temporarily use alert to confirm secret worked (admin UI injected later)
+            showToast('Admin access granted — launching console', 'success');
+            // in future chunk, this will call openAdmin()
+            // Example placeholder:
+            // openAdmin();
+          } else {
+            showToast('Invalid admin password', 'error');
+          }
+        }
+      });
+      // accessibility: allow Enter/Space to trigger
+      logo.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); logo.click(); } });
+    })();
+
+    // Initialize DB seed & restore session if present
+    (async function init(){
+      await seedIfEmpty();
+      try{
+        const s = JSON.parse(localStorage.getItem('dgb_session') || 'null');
+        if(s && s.userId){
+          // fetch user and automatically show app shell preview (full dashboard in chunk 2)
+          const users = await DB.getAll('users'); const u = users.find(x=>x.id === s.userId);
+          if(u){
+            document.getElementById('appShell').style.display = 'block';
+            document.getElementById('landing').style.display = 'none';
+            document.getElementById('uNamePreview').textContent = `${u.firstName} ${u.lastName}`;
+            document.getElementById('uMailPreview').textContent = u.email;
+          }
+        }
+      }catch(e){ console.warn('Session restore failed', e); }
+    })();
+
+    /* CHUNK 1 END - append CHUNK 2 (Dashboard, Accounts, Transfers, Transactions, PDF receipts, Admin CRUD, CSV/JSON import/export, WebSocket mock, EmailJS integration) here */
+  </script>
 </body>
 </html>
