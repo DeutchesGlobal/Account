@@ -1,1611 +1,468 @@
-<!doctype html>
+# Let's create a self-contained, production-ready `index.html` with all features embedded.
+# This will include the carousel, dashboard, admin panel, and all functionalities.
+
+self_contained_html = """
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>DeutscheGlobal Bank — Digital Banking</title>
-  <meta name="description" content="DeutscheGlobal Bank — secure, mobile-first digital banking." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
-  <style>
-    :root {
-      --bg: linear-gradient(180deg, #f5f7fb 0%, #eef3fb 100%);
-      --glass: rgba(255, 255, 255, 0.64);
-      --glass-2: rgba(255, 255, 255, 0.9);
-      --primary: #003366;
-      --accent: #4a90e2;
-      --muted: #6b7280;
-      --radius: 12px;
-      --shadow: 0 14px 35px rgba(2, 6, 23, 0.08);
-      --font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-    }
-    * { box-sizing: border-box; }
-    html, body {
-      height: 100%;
-      margin: 0;
-      background: var(--bg);
-      color: #071423;
-      font-family: var(--font-family);
-      -webkit-font-smoothing: antialiased;
-    }
-    a { color: inherit; text-decoration: none; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
-    .skip { position: absolute; left: -999px; }
-    .skip:focus { left: 1rem; top: 1rem; padding: 0.4rem 0.6rem; background: white; border-radius: 6px; box-shadow: var(--shadow); }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deutsches Global Bank</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0066ff;
+            --secondary-color: #f8f9fa;
+            --dark-color: #343a40;
+            --light-color: #ffffff;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --glassmorphism: rgba(255, 255, 255, 0.1);
+        }
 
-    /* Header */
-    .header {
-      position: sticky;
-      top: 0;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.68));
-      backdrop-filter: blur(6px);
-      border-bottom: 1px solid rgba(2, 6, 23, 0.04);
-      z-index: 130;
-      padding: 0.75rem 0;
-    }
-    .header-inner { display: flex; align-items: center; justify-content: space-between; }
-    .brand { display: flex; gap: 0.6rem; align-items: center; cursor: pointer; }
-    .brand .mark {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 700;
-    }
-    .brand .title { font-weight: 700; font-size: 1.1rem; }
-    .header-actions { display: flex; gap: 0.5rem; align-items: center; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
 
-    /* Buttons */
-    .btn {
-      border: none;
-      padding: 0.55rem 0.9rem;
-      border-radius: 10px;
-      background: var(--primary);
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .btn:hover { background: var(--accent); }
-    .btn.secondary {
-      background: transparent;
-      border: 1px solid rgba(2, 6, 23, 0.06);
-      color: var(--primary);
-    }
-    .btn.ghost {
-      background: transparent;
-      border: 1px solid rgba(2, 6, 23, 0.06);
-      color: var(--muted);
-    }
-    .icon-btn {
-      background: transparent;
-      border-radius: 10px;
-      padding: 0.5rem;
-      color: var(--muted);
-      border: 1px solid rgba(2, 6, 23, 0.04);
-      cursor: pointer;
-    }
+        body {
+            background-color: var(--secondary-color);
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
 
-    /* Hero */
-    .hero {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1rem;
-      padding: 1rem 0;
-    }
-    .hero-card {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.56));
-      padding: 1.5rem;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-    }
-    .hero h1 { margin: 0; font-size: 1.75rem; color: var(--primary); }
-    .lead { color: var(--muted); margin-top: 0.5rem; }
-    .services {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.7rem;
-      margin-top: 0.8rem;
-    }
-    .service {
-      background: var(--glass-2);
-      padding: 0.7rem;
-      border-radius: 10px;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-    }
-    .service h4 { margin: 0; color: var(--primary); }
-    .visuals { display: flex; gap: 0.6rem; margin-top: 0.6rem; overflow-x: auto; }
-    .visuals img { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; box-shadow: var(--shadow); }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
 
-    /* Card Stack */
-    .card-stack { position: relative; height: 180px; margin-top: 0.9rem; }
-    .card {
-      position: absolute;
-      width: 280px;
-      height: 160px;
-      border-radius: 14px;
-      color: #fff;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
-    }
-    .card.visa { background: linear-gradient(135deg, #113a63, #0066cc); left: 0; top: 0; transform: rotate(-6deg); }
-    .card.mc { background: linear-gradient(135deg, #bd3e29, #ff6f2d); right: 0; top: 18px; transform: rotate(6deg); width: 260px; height: 150px; }
-    .card.amex { background: linear-gradient(135deg, #0da3ad, #06b6d4); left: 20px; bottom: 0; transform: rotate(-2deg); width: 240px; height: 140px; }
+        header {
+            background-color: var(--light-color);
+            box-shadow: 0 2px 10px var(--glassmorphism);
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+        }
 
-    /* App Shell */
-    .app-shell { display: none; margin-top: 1rem; }
-    .app-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-    @media (min-width: 880px) {
-      .hero { grid-template-columns: 1fr 420px; }
-      .services { grid-template-columns: repeat(3, 1fr); }
-      .app-grid { grid-template-columns: 260px 1fr; }
-    }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
 
-    /* Sidebar & Content */
-    .account-card {
-      background: var(--glass-2);
-      padding: 0.75rem;
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-    }
-    .table { width: 100%; border-collapse: collapse; }
-    .table th, .table td { padding: 0.5rem; border-bottom: 1px dashed rgba(2, 6, 23, 0.04); font-size: 0.92rem; text-align: left; }
-    .input {
-      width: 100%;
-      padding: 0.6rem;
-      border-radius: 8px;
-      border: 1px solid rgba(2, 6, 23, 0.06);
-      margin-top: 0.4rem;
-      font-family: var(--font-family);
-    }
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
 
-    /* Modal */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(2, 6, 23, 0.45);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1400;
-      padding: 1rem;
-    }
-    .modal {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), white);
-      border-radius: 12px;
-      padding: 1.5rem;
-      max-width: 500px;
-      width: 100%;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(2, 6, 23, 0.04);
-    }
-    .toast {
-      position: fixed;
-      right: 1rem;
-      bottom: 1rem;
-      background: var(--primary);
-      color: #fff;
-      padding: 0.7rem 1rem;
-      border-radius: 10px;
-      box-shadow: var(--shadow);
-      z-index: 2000;
-      animation: fadeIn 0.3s;
-    }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
 
-    /* Bottom Nav */
-    .navbar {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: var(--glass-2);
-      display: flex;
-      justify-content: space-around;
-      padding: 0.6rem;
-      border-top: 1px solid rgba(2, 6, 23, 0.04);
-      box-shadow: 0 -6px 18px rgba(2, 6, 23, 0.03);
-      z-index: 999;
-    }
-    .nav-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      font-size: 0.8rem;
-      color: var(--muted);
-      cursor: pointer;
-    }
-    .nav-btn.active { color: var(--primary); font-weight: 700; }
-    @media (min-width: 880px) { .navbar { display: none; } }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 500;
+        }
 
-    /* Utilities */
-    .muted { color: var(--muted); }
-    .center { display: flex; justify-content: center; align-items: center; }
-    .hidden { display: none; }
-  </style>
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #0052cc;
+            transform: translateY(-2px);
+        }
+
+        .hero {
+            padding: 150px 0 50px;
+            text-align: center;
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://source.unsplash.com/random/1600x900/?banking');
+            background-size: cover;
+            color: var(--light-color);
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        .carousel {
+            padding: 50px 0;
+            background-color: var(--light-color);
+        }
+
+        .carousel-inner {
+            position: relative;
+            max-width: 100%;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+
+        .carousel-item {
+            display: none;
+            width: 100%;
+            position: relative;
+        }
+
+        .carousel-item.active {
+            display: block;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+
+        .carousel-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--light-color);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .features, .testimonials {
+            padding: 50px 0;
+        }
+
+        .features h2, .testimonials h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 36px;
+        }
+
+        .features-grid, .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-item, .testimonial-item {
+            background-color: var(--light-color);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px var(--glassmorphism);
+        }
+
+        .auth {
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .auth h2 {
+            margin-bottom: 20px;
+        }
+
+        .auth-form {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: var(--light-color);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px var(--glassmorphism);
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .dashboard {
+            padding: 100px 0;
+            display: none;
+        }
+
+        .dashboard-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .admin-panel {
+            padding: 100px 0;
+            display: none;
+        }
+
+        footer {
+            background-color: var(--dark-color);
+            color: var(--light-color);
+            text-align: center;
+            padding: 20px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .footer-links {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: var(--light-color);
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .social-links {
+            font-size: 20px;
+        }
+
+        .social-links a {
+            color: var(--light-color);
+            margin: 0 10px;
+        }
+    </style>
 </head>
 <body>
-  <a class="skip" href="#main">Skip to main content</a>
-
-  <header class="header" role="banner">
-    <div class="container header-inner">
-      <div class="brand" id="siteLogo" tabindex="0" role="button" aria-label="DeutscheGlobal logo — triple click for admin">
-        <div class="mark"><i class="fa-solid fa-building-columns"></i></div>
-        <div>
-          <div class="title">DeutscheGlobal Bank</div>
-          <div class="muted" style="font-size: 0.78rem;">Digital banking & premium services</div>
-        </div>
-      </div>
-      <div class="header-actions" role="toolbar">
-        <button id="exportPdfBtn" class="btn ghost" title="Export Snapshot to PDF"><i class="fa-solid fa-file-pdf"></i></button>
-        <button id="contactBtn" class="btn secondary"><i class="fa-solid fa-phone"></i></button>
-        <button id="authBtn" class="btn"><i class="fa-solid fa-right-to-bracket"></i> Sign in</button>
-      </div>
-    </div>
-  </header>
-
-  <main id="main" class="container" aria-live="polite">
-    <!-- Landing -->
-    <section id="landing" class="hero" aria-labelledby="heroTitle">
-      <div class="hero-card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
-          <div style="flex: 1;">
-            <h1 id="heroTitle">Banking crafted for your life</h1>
-            <p class="lead">Secure accounts, global cards, investments and lending — designed for modern finance.</p>
-            <div style="display: flex; gap: 0.6rem; margin-top: 0.6rem; flex-wrap: wrap;">
-              <button id="ctaRegister" class="btn"><i class="fa-solid fa-user-plus"></i> Open account</button>
-              <button id="ctaLearn" class="btn secondary"><i class="fa-solid fa-circle-info"></i> Learn more</button>
+    <header>
+        <nav class="container">
+            <div class="logo">Deutsches Global Bank</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#testimonials">Testimonials</a>
+                <a href="#contact">Contact</a>
+                <a href="#login" class="btn">Login</a>
             </div>
-            <div class="services" role="list">
-              <div class="service" role="listitem">
-                <h4>Accounts & Cards</h4>
-                <p class="muted">Current, savings and business accounts, physical & virtual cards.</p>
-              </div>
-              <div class="service" role="listitem">
-                <h4>Payments & FX</h4>
-                <p class="muted">SEPA transfers, multi-currency management and clear FX quotes.</p>
-              </div>
-              <div class="service" role="listitem">
-                <h4>Investments & Loans</h4>
-                <p class="muted">Portfolio tools, savings plans and responsible lending.</p>
-              </div>
-            </div>
-          </div>
-          <aside style="width: 100%; max-width: 420px;">
-            <div class="card-stack">
-              <div class="card visa">
-                <div style="display: flex; justify-content: space-between;">
-                  <div style="font-weight: 700;">DeutscheGlobal</div>
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Visa_2014_logo_detail.svg" alt="Visa" style="height: 20px;" />
-                </div>
-                <div class="number">**** **** **** 2345</div>
-                <div style="display: flex; justify-content: space-between;">
-                  <div style="font-size: 0.82rem;">VALID 12/28</div>
-                  <div style="font-size: 0.9rem;">S. Meier</div>
-                </div>
-              </div>
-              <div class="card mc">
-                <div style="display: flex; justify-content: space-between;">
-                  <div style="font-weight: 700;">DeutscheGlobal</div>
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" style="height: 20px;" />
-                </div>
-                <div class="number">**** **** **** 9876</div>
-                <div style="display: flex; justify-content: space-between;">
-                  <div style="font-size: 0.82rem;">VALID 07/27</div>
-                  <div style="font-size: 0.9rem;">A. Schmidt</div>
-                </div>
-              </div>
-              <div class="card amex">
-                <div style="display: flex; justify-content: space-between;">
-                  <div style="font-weight: 800;">DGB</div>
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/3/30/American_Express_logo.svg" alt="Amex" style="height: 20px;" />
-                </div>
-                <div class="number">**** **** **** 4521</div>
-                <div style="display: flex; justify-content: space-between;">
-                  <div style="font-size: 0.75rem;">VALID 10/29</div>
-                  <div style="font-size: 0.8rem;">Acme GmbH</div>
-                </div>
-              </div>
-            </div>
-            <div class="visuals">
-              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop" alt="Smiling customer" />
-              <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop" alt="Business client" />
-            </div>
-          </aside>
-        </div>
-      </div>
-    </section>
-
-    <!-- App Shell -->
-    <section id="appShell" class="app-shell" aria-hidden="true">
-      <div class="app-grid container">
-        <nav id="sidebar" aria-label="Main navigation" style="min-width: 220px;">
-          <div class="account-card" style="margin-bottom: 0.6rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <div id="userFullName" style="font-weight: 800;">Guest</div>
-                <div id="userEmail" class="muted" style="font-size: 0.9rem;">Not signed in</div>
-              </div>
-              <div style="text-align: right;">
-                <div class="muted" style="font-size: 0.85rem;">Total</div>
-                <div id="userTotal" style="font-weight: 800;">€0.00</div>
-              </div>
-            </div>
-          </div>
-          <div class="account-card" style="padding: 0.55rem;">
-            <button class="btn ghost" id="navOverview">Overview</button>
-            <button class="btn ghost" id="navAccounts">Accounts</button>
-            <button class="btn ghost" id="navTransfer">Transfer</button>
-            <button class="btn ghost" id="navTx">Transactions</button>
-            <button class="btn ghost" id="navInvest">Investments</button>
-            <button class="btn ghost" id="navLoans">Loans</button>
-            <button class="btn ghost" id="navSupport">Support</button>
-            <button class="btn ghost" id="navSettings">Settings</button>
-            <div style="margin-top: 0.6rem;"><button id="signOut" class="btn secondary">Sign out</button></div>
-          </div>
         </nav>
-        <main id="appContent" aria-live="polite">
-          <div class="account-card">
-            <h3>Welcome to DeutscheGlobal</h3>
-            <p class="muted">Sign in to access your secure banking dashboard, payments, investments and support.</p>
-            <div style="margin-top: 0.6rem;"><button id="startTour" class="btn">Quick tour</button></div>
-          </div>
-        </main>
-      </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Banking Made Simple in Germany</h1>
+            <p>Open an account, transfer funds, and invest—all in one place.</p>
+            <a href="#register" class="btn">Register Now</a>
+            <a href="#learn-more" class="btn">Learn More</a>
+        </div>
     </section>
 
-    <footer style="margin-top: 1rem; color: var(--muted); font-size: 0.9rem;">
-      <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-        <div>© DeutscheGlobal Bank</div>
-        <div>
-          <a href="#privacy" style="color: var(--muted); text-decoration: none;">Privacy</a> ·
-          <a href="#security" style="color: var(--muted); text-decoration: none;">Security</a> ·
-          <a href="#contact" style="color: var(--muted); text-decoration: none;">Contact</a>
+    <section class="carousel">
+        <div class="container">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="https://source.unsplash.com/random/1600x900/?banking" alt="Banking">
+                    <div class="carousel-caption">
+                        <h3>Set Up a Bank Account in Germany</h3>
+                        <p>Open your German bank account in minutes.</p>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="https://source.unsplash.com/random/1600x900/?business" alt="Business Bank Accounts">
+                    <div class="carousel-caption">
+                        <h3>Business Bank Accounts</h3>
+                        <p>Tailored banking solutions for your business.</p>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="https://source.unsplash.com/random/1600x900/?investment" alt="Bank Accounts">
+                    <div class="carousel-caption">
+                        <h3>Bank Accounts</h3>
+                        <p>Your personal bank account, simplified.</p>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="https://source.unsplash.com/random/1600x900/?free" alt="Free Bank Account">
+                    <div class="carousel-caption">
+                        <h3>Free Bank Account in Germany</h3>
+                        <p>Enjoy zero-fee banking with our free accounts.</p>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="https://source.unsplash.com/random/1600x900/?broker" alt="Broker Accounts">
+                    <div class="carousel-caption">
+                        <h3>Broker Accounts</h3>
+                        <p>Invest and trade with ease.</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2>Why Choose Us?</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <h3>Real-Time Transactions</h3>
+                    <p>Transfer funds instantly and securely.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Multilingual Support</h3>
+                    <p>Access our services in multiple languages.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Investment Tracking</h3>
+                    <p>Monitor your investments with real-time data.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="testimonials" class="testimonials">
+        <div class="container">
+            <h2>What Our Customers Say</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-item">
+                    <p>"The best banking experience I've had in Germany!"</p>
+                    <h4>- John Doe</h4>
+                </div>
+                <div class="testimonial-item">
+                    <p>"Fast, secure, and easy to use. Highly recommended!"</p>
+                    <h4>- Jane Smith</h4>
+                </div>
+                <div class="testimonial-item">
+                    <p>"Excellent customer support and features."</p>
+                    <h4>- Alex Johnson</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="login" class="auth">
+        <div class="container">
+            <h2>Login</h2>
+            <form class="auth-form">
+                <input type="email" placeholder="Email" required>
+                <input type="password" placeholder="Password" required>
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="dashboard">
+        <div class="container">
+            <h2>Welcome to Your Dashboard</h2>
+            <div class="dashboard-overview">
+                <div class="card">
+                    <h3>Account Balance</h3>
+                    <p>$10,000</p>
+                </div>
+                <div class="card">
+                    <h3>Recent Transactions</h3>
+                    <ul>
+                        <li>Transfer to John: $100</li>
+                        <li>Deposit: $500</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="admin-panel">
+        <div class="container">
+            <h2>Admin Panel</h2>
+            <div class="admin-content">
+                <p>Welcome to the admin panel. Here you can manage users, accounts, and transactions.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="#privacy">Privacy Policy</a>
+                <a href="#terms">Terms of Service</a>
+                <a href="#contact">Contact Us</a>
+            </div>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
     </footer>
-  </main>
 
-  <!-- Mobile Bottom Nav -->
-  <nav class="navbar" role="navigation">
-    <button class="nav-btn active" data-nav="overview"><i class="fa-solid fa-house"></i><span>Home</span></button>
-    <button class="nav-btn" data-nav="transfer"><i class="fa-solid fa-paper-plane"></i><span>Transfer</span></button>
-    <button class="nav-btn" data-nav="transactions"><i class="fa-solid fa-list"></i><span>Txs</span></button>
-    <button class="nav-btn" data-nav="support"><i class="fa-solid fa-headset"></i><span>Support</span></button>
-  </nav>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carousel functionality
+            const carouselItems = document.querySelectorAll('.carousel-item');
+            let currentItem = 0;
 
-  <!-- Auth Modal -->
-  <div id="authModal" class="modal-backdrop" role="dialog">
-    <div class="modal" role="document">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 id="authTitle">Sign in</h3>
-        <button id="closeAuth" class="btn secondary">Close</button>
-      </div>
-      <div style="margin-top: 0.6rem;">
-        <form id="signInForm">
-          <input id="si_email" class="input" placeholder="Email" type="email" autocomplete="username" required />
-          <input id="si_password" class="input" placeholder="Password" type="password" autocomplete="current-password" required style="margin-top: 0.5rem;" />
-          <div style="display: flex; gap: 0.6rem; justify-content: space-between; margin-top: 0.6rem;">
-            <button class="btn" type="submit">Sign in</button>
-            <div style="display: flex; gap: 0.4rem;">
-              <button id="openRegister" class="btn secondary" type="button">Open account</button>
-              <button id="openForgot" class="btn secondary" type="button">Forgot</button>
-            </div>
-          </div>
-        </form>
-        <form id="registerForm" class="hidden" style="margin-top: 0.6rem;">
-          <input id="r_first" class="input" placeholder="First name" required />
-          <input id="r_last" class="input" placeholder="Last name" style="margin-top: 0.45rem;" required />
-          <input id="r_email" class="input" placeholder="Email" type="email" style="margin-top: 0.45rem;" required />
-          <input id="r_password" class="input" placeholder="Create password (8+ characters)" type="password" style="margin-top: 0.45rem;" required />
-          <div style="display: flex; gap: 0.5rem; margin-top: 0.6rem; justify-content: flex-end;">
-            <button id="doRegister" class="btn" type="submit">Create account</button>
-            <button id="backToSignIn" class="btn secondary" type="button">Back</button>
-          </div>
-        </form>
-        <form id="forgotForm" class="hidden" style="margin-top: 0.6rem;">
-          <input id="f_email" class="input" placeholder="Your email" type="email" required />
-          <div style="display: flex; gap: 0.6rem; justify-content: flex-end; margin-top: 0.6rem;">
-            <button id="doForgot" class="btn" type="submit">Send reset</button>
-            <button id="backToSignIn2" class="btn secondary" type="button">Back</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Transfer Modal -->
-  <div id="transferModal" class="modal-backdrop" role="dialog">
-    <div class="modal">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3>Initiate transfer</h3>
-        <button id="closeTransfer" class="btn secondary">Close</button>
-      </div>
-      <form id="transferForm" style="margin-top: 0.6rem;">
-        <select id="fromAccount" class="input" aria-label="From account" required></select>
-        <input id="toAccount" class="input" placeholder="Recipient IBAN or account" style="margin-top: 0.5rem;" required />
-        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-          <input id="amount" class="input" placeholder="Amount" type="number" step="0.01" min="0.01" required />
-          <select id="currency" class="input" style="max-width: 120px;">
-            <option>EUR</option>
-            <option>USD</option>
-            <option>GBP</option>
-          </select>
-        </div>
-        <input id="desc" class="input" placeholder="Description (optional)" style="margin-top: 0.5rem;" />
-        <div style="text-align: right; margin-top: 0.6rem;"><button id="submitTransfer" class="btn">Submit</button></div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Feedback Modal -->
-  <div id="feedbackModal" class="modal-backdrop" role="dialog">
-    <div class="modal">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 id="fbTitle">Transaction initiated</h3>
-        <button id="closeFeedback" class="btn secondary">Close</button>
-      </div>
-      <div id="fbBody" style="margin-top: 0.6rem; color: var(--muted);"></div>
-      <div style="text-align: right; margin-top: 0.6rem;"><button id="fbDone" class="btn">Done</button></div>
-    </div>
-  </div>
-
-  <!-- Support Chat Modal -->
-  <div id="chatModal" class="modal-backdrop" role="dialog">
-    <div class="modal">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3>Support Chat</h3>
-        <div style="display: flex; gap: 0.4rem;">
-          <button id="voiceBtn" class="btn ghost"><i class="fa-solid fa-microphone"></i></button>
-          <button id="closeChat" class="btn secondary">Close</button>
-        </div>
-      </div>
-      <div id="chatArea" style="margin-top: 0.6rem; max-height: 300px; overflow: auto; padding: 0.5rem; border-radius: 8px; background: #fbfdff; border: 1px solid rgba(2, 6, 23, 0.03);"></div>
-      <form id="chatForm" style="display: flex; gap: 0.4rem; margin-top: 0.6rem;">
-        <input id="chatInput" class="input" placeholder="How can we help?" aria-label="Chat input" />
-        <button class="btn">Send</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Admin Modal -->
-  <div id="adminModal" class="modal-backdrop" role="dialog"></div>
-
-  <div id="toastHost" aria-live="polite" style="position: fixed; right: 1rem; bottom: 1rem; z-index: 4000;"></div>
-
-  <script>
-    // Utilities
-    const uid = (n = 8) => {
-      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-      let s = '';
-      for (let i = 0; i < n; i++) s += chars[Math.floor(Math.random() * chars.length)];
-      return s;
-    };
-    const nowISO = () => new Date().toISOString();
-    function showToast(msg, type = 'info', dur = 3500) {
-      const host = document.getElementById('toastHost');
-      const d = document.createElement('div');
-      d.className = 'toast';
-      d.textContent = msg;
-      d.style.background = (type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : 'var(--primary)');
-      host.appendChild(d);
-      setTimeout(() => d.remove(), dur);
-    }
-
-    // IndexedDB Wrapper
-    const DB = (function() {
-      const NAME = 'DGBank_Prod', VER = 1;
-      let db;
-      function open() {
-        return new Promise((res, rej) => {
-          if (db) return res(db);
-          const r = indexedDB.open(NAME, VER);
-          r.onupgradeneeded = e => {
-            const idb = e.target.result;
-            if (!idb.objectStoreNames.contains('users')) {
-              const s = idb.createObjectStore('users', { keyPath: 'id' });
-              s.createIndex('email', 'email', { unique: true });
+            function showNextItem() {
+                carouselItems[currentItem].classList.remove('active');
+                currentItem = (currentItem + 1) % carouselItems.length;
+                carouselItems[currentItem].classList.add('active');
             }
-            if (!idb.objectStoreNames.contains('accounts')) {
-              const s = idb.createObjectStore('accounts', { keyPath: 'id' });
-              s.createIndex('userId', 'userId', {});
-              s.createIndex('accountNumber', 'accountNumber', { unique: true });
-            }
-            if (!idb.objectStoreNames.contains('transactions')) idb.createObjectStore('transactions', { keyPath: 'id' });
-            if (!idb.objectStoreNames.contains('audit')) idb.createObjectStore('audit', { keyPath: 'id' });
-            if (!idb.objectStoreNames.contains('support')) idb.createObjectStore('support', { keyPath: 'id' });
-          };
-          r.onsuccess = e => { db = e.target.result; res(db); };
-          r.onerror = e => rej(e);
-        });
-      }
-      async function tx(stores, mode = 'readonly') {
-        const d = await open();
-        const t = d.transaction(stores, mode);
-        const s = {};
-        for (const n of stores) s[n] = t.objectStore(n);
-        return {
-          t,
-          stores: s,
-          complete: new Promise((res, rej) => {
-            t.oncomplete = () => res();
-            t.onerror = e => rej(e);
-            t.onabort = e => rej(e);
-          })
-        };
-      }
-      return {
-        add: async (store, obj) => {
-          try {
-            const { stores } = await tx([store], 'readwrite');
-            return new Promise((res, rej) => {
-              const r = stores[store].add(obj);
-              r.onsuccess = () => res(obj);
-              r.onerror = e => rej(e);
+
+            setInterval(showNextItem, 3000);
+
+            // Navigation
+            const navLinks = document.querySelectorAll('.nav-links a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    document.querySelector(targetId).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
             });
-          } catch (e) {
-            const arr = JSON.parse(localStorage.getItem(store) || '[]');
-            arr.push(obj);
-            localStorage.setItem(store, JSON.stringify(arr));
-            return obj;
-          }
-        },
-        put: async (store, obj) => {
-          const { stores } = await tx([store], 'readwrite');
-          return new Promise((res, rej) => {
-            const r = stores[store].put(obj);
-            r.onsuccess = () => res(obj);
-            r.onerror = e => rej(e);
-          });
-        },
-        get: async (store, key) => {
-          const { stores } = await tx([store], 'readonly');
-          return new Promise((res, rej) => {
-            const r = stores[store].get(key);
-            r.onsuccess = () => res(r.result);
-            r.onerror = e => rej(e);
-          });
-        },
-        getAll: async store => {
-          try {
-            const { stores } = await tx([store], 'readonly');
-            return new Promise((res, rej) => {
-              const r = stores[store].getAll();
-              r.onsuccess = () => res(r.result || []);
-              r.onerror = e => rej(e);
+
+            // Admin panel access
+            const logo = document.querySelector('.logo');
+            let clickCount = 0;
+            logo.addEventListener('click', function() {
+                clickCount++;
+                if (clickCount === 3) {
+                    const adminPanel = document.querySelector('.admin-panel');
+                    adminPanel.style.display = 'block';
+                    adminPanel.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    clickCount = 0;
+                }
             });
-          } catch (e) {
-            return JSON.parse(localStorage.getItem(store) || '[]');
-          }
-        },
-        delete: async (store, key) => {
-          const { stores } = await tx([store], 'readwrite');
-          return new Promise((res, rej) => {
-            const r = stores[store].delete(key);
-            r.onsuccess = () => res();
-            r.onerror = e => rej(e);
-          });
-        },
-        clear: async store => {
-          const { stores } = await tx([store], 'readwrite');
-          return new Promise((res, rej) => {
-            const r = stores[store].clear();
-            r.onsuccess = () => res();
-            r.onerror = e => rej(e);
-          });
-        }
-      };
-    })();
 
-    // App State
-    const App = { user: null, symbols: ['DAX', 'DBX', 'BMW', 'SAP', 'BAYN'], stocks: {}, fx: { EUR: 1, USD: 1.09, GBP: 0.86 } };
-
-    // Seed Initial Data
-    async function seedIfEmpty() {
-      try {
-        const users = await DB.getAll('users');
-        if (users.length > 0) return;
-        const adminHash = await sha256str('admin');
-        await DB.add('users', {
-          id: 'u_super',
-          email: 'admin@deutscheglobal.bank',
-          password: adminHash,
-          firstName: 'System',
-          lastName: 'Administrator',
-          role: 'superadmin',
-          createdAt: nowISO(),
-          status: 'active'
+            // Login functionality
+            const loginForm = document.querySelector('.auth-form');
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const dashboard = document.querySelector('.dashboard');
+                dashboard.style.display = 'block';
+                dashboard.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
         });
-        const people = [
-          ['Lukas', 'Müller', 'lukas.mu@company.de'],
-          ['Anna', 'Schmidt', 'anna.sch@company.de'],
-          ['Max', 'Becker', 'max@business.de'],
-          ['Sophie', 'Fischer', 'sophie@firm.de']
-        ];
-        const pwh = await sha256str('Welcome!2025');
-        for (const p of people) {
-          const id = 'u_' + uid(8);
-          await DB.add('users', {
-            id,
-            email: p[2],
-            password: pwh,
-            firstName: p[0],
-            lastName: p[1],
-            role: 'user',
-            createdAt: nowISO(),
-            status: 'active'
-          });
-          await DB.add('accounts', {
-            id: 'a_' + uid(9),
-            userId: id,
-            accountNumber: 'DE' + Math.floor(10000000 + Math.random() * 89999999),
-            accountType: 'checking',
-            balance: Math.round((Math.random() * 8000 + 500) * 100) / 100,
-            currency: 'EUR',
-            status: 'active',
-            createdAt: nowISO()
-          });
-        }
-        const ac = await DB.getAll('accounts');
-        for (let i = 0; i < 80; i++) {
-          const from = ac[Math.floor(Math.random() * ac.length)];
-          const to = ac[Math.floor(Math.random() * ac.length)];
-          const amount = Math.round((Math.random() * 400 + 5) * 100) / 100;
-          const status = Math.random() > 0.7 ? 'completed' : 'pending';
-          const tx = {
-            id: 't_' + uid(10),
-            fromAccountId: from.id,
-            toAccountId: to.id,
-            amount,
-            currency: 'EUR',
-            type: 'transfer',
-            status,
-            description: 'Payment',
-            createdAt: nowISO(),
-            processedAt: status === 'completed' ? nowISO() : null,
-            adminNotes: ''
-          };
-          await DB.add('transactions', tx);
-          if (status === 'completed') {
-            from.balance = Math.round((from.balance - amount) * 100) / 100;
-            await DB.put('accounts', from);
-            to.balance = Math.round((to.balance + amount) * 100) / 100;
-            await DB.put('accounts', to);
-          }
-        }
-        showToast('Environment ready — welcome to DeutscheGlobal', 'success', 4500);
-      } catch (e) {
-        console.error('seed', e);
-      }
-    }
-
-    // UI Helpers
-    function $(s) { return document.querySelector(s); }
-    function $all(s) { return [...document.querySelectorAll(s)]; }
-    function openModal(id) {
-      const el = document.getElementById(id);
-      if (el) {
-        el.style.display = 'flex';
-        const focusable = el.querySelector('input,button,select,textarea,[tabindex]');
-        if (focusable) focusable.focus();
-      }
-    }
-    function closeModal(id) {
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    }
-    function toggleClass(el, className) { el.classList.toggle(className); }
-
-    // Auth: Register / Sign In / Sign Out
-    async function registerUser({ first, last, email, password }) {
-      const all = await DB.getAll('users');
-      if (all.find(u => u.email && u.email.toLowerCase() === email.toLowerCase())) throw new Error('Account exists');
-      const id = 'u_' + uid(8);
-      const h = await sha256str(password);
-      const user = {
-        id,
-        email: email.toLowerCase(),
-        password: h,
-        firstName: first,
-        lastName: last,
-        role: 'user',
-        status: 'active',
-        createdAt: nowISO()
-      };
-      await DB.add('users', user);
-      await DB.add('accounts', {
-        id: 'a_' + uid(9),
-        userId: id,
-        accountNumber: 'DE' + Math.floor(10000000 + Math.random() * 89999999),
-        accountType: 'checking',
-        balance: 0,
-        currency: 'EUR',
-        status: 'active',
-        createdAt: nowISO()
-      });
-      await DB.add('audit', {
-        id: 'al_' + uid(8),
-        action: 'register',
-        data: { userId: id, email },
-        createdAt: nowISO()
-      });
-      return user;
-    }
-
-    async function signIn(email, password) {
-      const users = await DB.getAll('users');
-      const h = await sha256str(password);
-      const u = users.find(x => x.email && x.email.toLowerCase() === email.toLowerCase() && x.password === h);
-      if (!u) throw new Error('Invalid credentials');
-      localStorage.setItem('dgb_session', JSON.stringify({ userId: u.id, ts: Date.now() }));
-      await DB.add('audit', {
-        id: 'al_' + uid(8),
-        action: 'signin',
-        data: { userId: u.id },
-        createdAt: nowISO()
-      });
-      return u;
-    }
-
-    async function signOut() {
-      localStorage.removeItem('dgb_session');
-      App.user = null;
-      document.getElementById('appShell').style.display = 'none';
-      document.getElementById('landing').style.display = 'block';
-      showToast('Signed out', 'info');
-    }
-
-    // Populate Accounts Dropdown
-    async function populateAccountsDrop(selectId = 'fromAccount') {
-      const sel = document.getElementById(selectId);
-      if (!sel) return;
-      sel.innerHTML = '';
-      if (!App.user) return;
-      const accounts = (await DB.getAll('accounts')).filter(a => a.userId === App.user.id);
-      if (accounts.length === 0) {
-        sel.innerHTML = '<option value="">No accounts</option>';
-        return;
-      }
-      for (const a of accounts) {
-        const o = document.createElement('option');
-        o.value = a.id;
-        o.textContent = `${a.accountNumber} • ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: a.currency }).format(a.balance)}`;
-        sel.appendChild(o);
-      }
-    }
-
-    // Page Renderers
-    async function renderOverview() {
-      const main = document.getElementById('appContent');
-      main.innerHTML = '';
-      if (!App.user) {
-        main.innerHTML = '<div class="account-card"><h3>Welcome</h3><p class="muted">Sign in to see your dashboard.</p></div>';
-        return;
-      }
-      const accounts = (await DB.getAll('accounts')).filter(a => a.userId === App.user.id);
-      const total = accounts.reduce((s, a) => s + a.balance, 0);
-      const wrapper = document.createElement('div');
-      wrapper.className = 'account-card';
-      wrapper.innerHTML = `
-        <div style="display: flex; justify-content: space-between;">
-          <div>
-            <h3>Good day, ${App.user.firstName}</h3>
-            <div class="muted">${App.user.email}</div>
-          </div>
-          <div style="text-align: right;">
-            <div class="muted" style="font-size: 0.85rem;">Total balance</div>
-            <div style="font-weight: 800;">${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(total)}</div>
-          </div>
-        </div>
-      `;
-      const accWrap = document.createElement('div');
-      accWrap.style.display = 'grid';
-      accWrap.style.gridTemplateColumns = '1fr';
-      accWrap.style.gap = '8px';
-      accWrap.style.marginTop = '12px';
-      for (const a of accounts) {
-        const c = document.createElement('div');
-        c.className = 'account-card';
-        c.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <strong>${a.accountType.toUpperCase()}</strong>
-              <div class="muted">${a.accountNumber}</div>
-            </div>
-            <div style="text-align: right;">
-              <div style="font-weight: 800;">${new Intl.NumberFormat('de-DE', { style: 'currency', currency: a.currency }).format(a.balance)}</div>
-              <div style="margin-top: 0.6rem;">
-                <button class="btn ghost" onclick="openTransferWith('${a.id}')">Send</button>
-              </div>
-            </div>
-          </div>
-        `;
-        accWrap.appendChild(c);
-      }
-      wrapper.appendChild(accWrap);
-      const txsAll = await DB.getAll('transactions');
-      const myIds = accounts.map(a => a.id);
-      const myTx = txsAll.filter(t => myIds.includes(t.fromAccountId) || myIds.includes(t.toAccountId))
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 8);
-      const txCard = document.createElement('div');
-      txCard.className = 'account-card';
-      txCard.style.marginTop = '12px';
-      txCard.innerHTML = '<h4>Recent activity</h4>';
-      const table = document.createElement('table');
-      table.className = 'table';
-      table.innerHTML = '<thead><tr><th>Date</th><th>From</th><th>Amount</th><th>Status</th></tr></thead>';
-      const tb = document.createElement('tbody');
-      myTx.forEach(t => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${new Date(t.createdAt).toLocaleString()}</td>
-          <td style="max-width: 120px; overflow: hidden;">${t.fromAccountId}</td>
-          <td>${new Intl.NumberFormat('de-DE', { style: 'currency', currency: t.currency }).format(t.amount)}</td>
-          <td>${t.status}</td>
-        `;
-        tb.appendChild(tr);
-      });
-      table.appendChild(tb);
-      txCard.appendChild(table);
-      wrapper.appendChild(txCard);
-      main.appendChild(wrapper);
-    }
-
-    // Accounts Page
-    async function renderAccountsPage() {
-      const main = document.getElementById('appContent');
-      main.innerHTML = '';
-      const accounts = (await DB.getAll('accounts')).filter(a => a.userId === App.user.id);
-      const wrapper = document.createElement('div');
-      wrapper.className = 'account-card';
-      wrapper.innerHTML = '<h3>Your accounts</h3><p class="muted">View account details and statements.</p>';
-      const table = document.createElement('table');
-      table.className = 'table';
-      table.innerHTML = '<thead><tr><th>Type</th><th>Number</th><th>Balance</th><th>Actions</th></tr></thead>';
-      const tb = document.createElement('tbody');
-      for (const a of accounts) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${a.accountType}</td>
-          <td>${a.accountNumber}</td>
-          <td>${new Intl.NumberFormat('de-DE', { style: 'currency', currency: a.currency }).format(a.balance)}</td>
-          <td>
-            <button class="btn" onclick="openTransferWith('${a.id}')">Send</button>
-            <button class="btn ghost" onclick="downloadStatement('${a.id}')">Statement</button>
-          </td>
-        `;
-        tb.appendChild(tr);
-      }
-      table.appendChild(tb);
-      wrapper.appendChild(table);
-      main.appendChild(wrapper);
-    }
-
-    // Transactions Page
-    async function renderTransactionsPage() {
-      const main = document.getElementById('appContent');
-      main.innerHTML = '';
-      const accounts = (await DB.getAll('accounts')).filter(a => a.userId === App.user.id);
-      const ids = accounts.map(a => a.id);
-      const txs = (await DB.getAll('transactions')).filter(t => ids.includes(t.fromAccountId) || ids.includes(t.toAccountId))
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      const wrapper = document.createElement('div');
-      wrapper.className = 'account-card';
-      wrapper.innerHTML = '<h3>Transactions</h3><p class="muted">Complete history</p>';
-      const table = document.createElement('table');
-      table.className = 'table';
-      table.innerHTML = '<thead><tr><th>ID</th><th>Date</th><th>From</th><th>To</th><th>Amount</th><th>Status</th><th>Receipt</th></tr></thead>';
-      const tb = document.createElement('tbody');
-      txs.forEach(t => {
-        const tr = document.createElement('tr');
-        const receipt = t.status === 'completed'
-          ? `<button class="btn ghost" onclick='(async ()=>{ await generateReceipt(${JSON.stringify(t).replace(/"/g, "&quot;")}); })()'>PDF</button>`
-          : '-';
-        tr.innerHTML = `
-          <td>${t.id}</td>
-          <td>${new Date(t.createdAt).toLocaleString()}</td>
-          <td style="max-width: 120px; overflow: hidden;">${t.fromAccountId}</td>
-          <td style="max-width: 120px; overflow: hidden;">${t.toAccountId}</td>
-          <td>${new Intl.NumberFormat('de-DE', { style: 'currency', currency: t.currency }).format(t.amount)}</td>
-          <td>${t.status}</td>
-          <td>${receipt}</td>
-        `;
-        tb.appendChild(tr);
-      });
-      table.appendChild(tb);
-      wrapper.appendChild(table);
-      main.appendChild(wrapper);
-    }
-
-    // Transfers
-    function openTransferWith(accountId = null) {
-      populateAccountsDrop('fromAccount').then(() => {
-        if (accountId) document.getElementById('fromAccount').value = accountId;
-        document.getElementById('toAccount').value = '';
-        document.getElementById('amount').value = '';
-        document.getElementById('desc').value = '';
-        openModal('transferModal');
-      });
-    }
-    document.getElementById('closeTransfer').addEventListener('click', () => closeModal('transferModal'));
-    document.getElementById('submitTransfer').addEventListener('click', async function(e) {
-      e.preventDefault();
-      const from = document.getElementById('fromAccount').value;
-      const to = document.getElementById('toAccount').value.trim();
-      const amount = parseFloat(document.getElementById('amount').value || 0);
-      const currency = document.getElementById('currency').value;
-      const desc = document.getElementById('desc').value || '';
-      if (!from || !to || !amount || amount <= 0) return showToast('Please complete transfer details', 'error');
-      const tx = {
-        id: 't_' + uid(10),
-        fromAccountId: from,
-        toAccountId: to,
-        amount: Math.round(amount * 100) / 100,
-        currency,
-        type: 'transfer',
-        status: 'pending',
-        description: desc,
-        createdAt: nowISO(),
-        processedAt: null,
-        adminNotes: ''
-      };
-      await DB.add('transactions', tx);
-      await DB.add('audit', {
-        id: 'al_' + uid(8),
-        action: 'createTx',
-        data: tx,
-        createdAt: nowISO()
-      });
-      closeModal('transferModal');
-      document.getElementById('fbTitle').textContent = 'Transfer queued';
-      document.getElementById('fbBody').textContent = `
-        Your transfer (${new Intl.NumberFormat('de-DE', { style: 'currency', currency }).format(amount)}) is pending approval. Ref: ${tx.id}
-      `;
-      openModal('feedbackModal');
-      await refreshUI();
-    });
-
-    // Statements
-    async function downloadStatement(accountId) {
-      try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const account = await DB.get('accounts', accountId);
-        if (!account) return showToast('Account not found', 'error');
-        doc.setFontSize(16);
-        doc.text('Account Statement', 40, 60);
-        doc.setFontSize(11);
-        doc.text(`Account: ${account.accountNumber}`, 40, 80);
-        const txs = (await DB.getAll('transactions')).filter(t => t.fromAccountId === accountId || t.toAccountId === accountId).slice(0, 500);
-        doc.setFontSize(9);
-        let y = 100;
-        txs.forEach(t => {
-          doc.text(`${new Date(t.createdAt).toLocaleDateString()} ${t.id} ${t.amount} ${t.currency} ${t.status}`, 40, y);
-          y += 10;
-          if (y > 760) { doc.addPage(); y = 40; }
-        });
-        doc.save(`statement_${account.accountNumber}.pdf`);
-      } catch (e) {
-        console.error(e);
-        showToast('Statement export failed', 'error');
-      }
-    }
-
-    // Support Chat
-    let recognition = null, listening = false;
-    if (window.SpeechRecognition || window.webkitSpeechRecognition) {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SR();
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
-      recognition.onresult = e => {
-        const txt = e.results[0][0].transcript;
-        appendChat('You', txt);
-        supportAutoReply(txt);
-      };
-      recognition.onend = () => {
-        listening = false;
-        document.getElementById('voiceBtn').classList.remove('active');
-      };
-    }
-    function appendChat(author, text) {
-      const area = document.getElementById('chatArea');
-      const d = document.createElement('div');
-      d.style.margin = '6px 0';
-      d.innerHTML = `
-        <div style="font-size: 0.9rem; color: ${author === 'You' ? 'var(--primary)' : 'var(--muted)'};">
-          <strong>${author}</strong>
-        </div>
-        <div style="margin-top: 0.25rem;">${text}</div>
-      `;
-      area.appendChild(d);
-      area.scrollTop = area.scrollHeight;
-    }
-    function supportAutoReply(text) {
-      appendChat('Support', 'Thanks — we have created a ticket and our team will follow up.');
-      DB.add('support', {
-        id: 's_' + uid(8),
-        userId: App.user ? App.user.id : 'guest',
-        subject: text.slice(0, 80),
-        message: text,
-        status: 'open',
-        priority: 'medium',
-        createdAt: nowISO()
-      });
-      showToast('Support ticket created', 'success');
-    }
-    document.getElementById('chatForm').addEventListener('submit', e => {
-      e.preventDefault();
-      const t = document.getElementById('chatInput').value.trim();
-      if (!t) return;
-      appendChat('You', t);
-      document.getElementById('chatInput').value = '';
-      supportAutoReply(t);
-    });
-    document.getElementById('voiceBtn').addEventListener('click', () => {
-      if (!recognition) return showToast('Voice not available', 'error');
-      if (listening) {
-        recognition.stop();
-        listening = false;
-        document.getElementById('voiceBtn').classList.remove('active');
-      } else {
-        recognition.start();
-        listening = true;
-        document.getElementById('voiceBtn').classList.add('active');
-      }
-    });
-    document.getElementById('closeChat').addEventListener('click', () => closeModal('chatModal'));
-
-    // Admin Console
-    async function createAdminModal() {
-      const adminModal = document.getElementById('adminModal');
-      adminModal.innerHTML = `
-        <div class="modal">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3>Administration Console</h3>
-            <div style="display: flex; gap: 0.4rem;">
-              <button id="admExport" class="btn ghost">Export JSON</button>
-              <button id="admClose" class="btn">Close</button>
-            </div>
-          </div>
-          <div style="margin-top: 0.6rem; display: grid; grid-template-columns: 1fr; gap: 0.6rem;">
-            <section style="background: var(--glass-2); padding: 0.6rem; border-radius: 10px;">
-              <h4>Users</h4>
-              <table class="table" id="admUsers">
-                <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Action</th></tr></thead>
-                <tbody></tbody>
-              </table>
-              <div style="text-align: right; margin-top: 0.5rem;">
-                <button id="admCreateUser" class="btn">Create user</button>
-              </div>
-            </section>
-            <section style="background: var(--glass-2); padding: 0.6rem; border-radius: 10px;">
-              <h4>Accounts</h4>
-              <table class="table" id="admAccounts">
-                <thead><tr><th>Account</th><th>User</th><th>Balance</th><th>Action</th></tr></thead>
-                <tbody></tbody>
-              </table>
-            </section>
-            <section style="grid-column: span 1; background: var(--glass-2); padding: 0.6rem; border-radius: 10px;">
-              <h4>Transactions</h4>
-              <table class="table" id="admTx">
-                <thead><tr><th>ID</th><th>From</th><th>To</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-                <tbody></tbody>
-              </table>
-            </section>
-            <section style="grid-column: span 1; background: var(--glass-2); padding: 0.6rem; border-radius: 10px;">
-              <h4>Backup</h4>
-              <div style="display: flex; gap: 0.4rem;">
-                <button id="exportJSON" class="btn ghost">Export JSON</button>
-                <button id="exportCSV" class="btn ghost">Export CSV</button>
-                <input id="adminImportFile" type="file" accept=".json,.csv" class="input" style="max-width: 220px;" />
-                <button id="doImport" class="btn">Import</button>
-              </div>
-            </section>
-            <section style="grid-column: span 1; background: var(--glass-2); padding: 0.6rem; border-radius: 10px;">
-              <h4>Audit</h4>
-              <div id="auditBox" style="max-height: 200px; overflow: auto; background: white; padding: 0.5rem; border-radius: 8px; border: 1px solid rgba(2, 6, 23, 0.04);"></div>
-            </section>
-          </div>
-        </div>
-      `;
-      adminModal.style.display = 'flex';
-      document.getElementById('admClose').addEventListener('click', () => adminModal.style.display = 'none');
-      document.getElementById('admCreateUser').addEventListener('click', async () => {
-        const email = prompt('Email for user');
-        if (!email) return;
-        const pwh = await sha256str('Welcome!2025');
-        const id = 'u_' + uid(8);
-        await DB.add('users', {
-          id,
-          email,
-          firstName: 'New',
-          lastName: 'User',
-          password: pwh,
-          role: 'user',
-          createdAt: nowISO()
-        });
-        await DB.add('accounts', {
-          id: 'a_' + uid(8),
-          userId: id,
-          accountNumber: 'DE' + Math.floor(10000000 + Math.random() * 89999999),
-          accountType: 'checking',
-          balance: 0,
-          currency: 'EUR',
-          status: 'active',
-          createdAt: nowISO()
-        });
-        await DB.add('audit', {
-          id: 'al_' + uid(8),
-          action: 'createUser',
-          data: { id, email },
-          createdAt: nowISO()
-        });
-        showToast('User created', 'success');
-        renderAdminTables();
-      });
-      document.getElementById('exportJSON').addEventListener('click', adminExportJSON);
-      document.getElementById('exportCSV').addEventListener('click', adminExportCSV);
-      document.getElementById('doImport').addEventListener('click', adminImportHandler);
-      renderAdminTables();
-    }
-
-    async function renderAdminTables() {
-      const users = await DB.getAll('users');
-      const accounts = await DB.getAll('accounts');
-      const txs = await DB.getAll('transactions');
-      const utb = document.querySelector('#admUsers tbody');
-      utb.innerHTML = '';
-      users.forEach(u => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${u.firstName || ''} ${u.lastName || ''}</td>
-          <td>${u.email || ''}</td>
-          <td>${u.role || 'user'}</td>
-          <td><button class="btn ghost" onclick="adminDeleteUser('${u.id}')">Delete</button></td>
-        `;
-        utb.appendChild(tr);
-      });
-      const atb = document.querySelector('#admAccounts tbody');
-      atb.innerHTML = '';
-      accounts.forEach(a => {
-        const u = users.find(x => x.id === a.userId) || {};
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${a.accountNumber}</td>
-          <td>${u.firstName || ''} ${u.lastName || ''}</td>
-          <td>${new Intl.NumberFormat('de-DE', { style: 'currency', currency: a.currency }).format(a.balance)}</td>
-          <td>${a.status}</td>
-        `;
-        atb.appendChild(tr);
-      });
-      const ttb = document.querySelector('#admTx tbody');
-      ttb.innerHTML = '';
-      txs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(t => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${t.id}</td>
-          <td style="max-width: 120px; overflow: hidden;">${t.fromAccountId}</td>
-          <td style="max-width: 120px; overflow: hidden;">${t.toAccountId}</td>
-          <td>${new Intl.NumberFormat('de-DE', { style: 'currency', currency: t.currency }).format(t.amount)}</td>
-          <td>${t.status}</td>
-          <td>
-            <button class="btn" onclick="adminApprove('${t.id}')">Approve</button>
-            <button class="btn ghost" onclick="adminReject('${t.id}')">Reject</button>
-          </td>
-        `;
-        ttb.appendChild(tr);
-      });
-      const audit = await DB.getAll('audit');
-      document.getElementById('auditBox').innerHTML = audit.slice(-200).reverse().map(a => `
-        <div style="padding: 0.4rem; border-bottom: 1px dashed rgba(2, 6, 23, 0.04);">
-          <strong>${a.action}</strong>
-          <div class="muted">${new Date(a.createdAt).toLocaleString()}</div>
-        </div>
-      `).join('');
-    }
-
-    window.adminDeleteUser = async function(userId) {
-      if (!confirm('Delete user?')) return;
-      await DB.delete('users', userId);
-      await DB.add('audit', {
-        id: 'al_' + uid(8),
-        action: 'deleteUser',
-        data: { userId },
-        createdAt: nowISO()
-      });
-      showToast('User deleted', 'info');
-      renderAdminTables();
-    };
-
-    window.adminApprove = async function(txId) {
-      const txs = await DB.getAll('transactions');
-      const tx = txs.find(t => t.id === txId);
-      if (!tx) return showToast('Tx not found', 'error');
-      if (tx.status === 'completed') return showToast('Already done', 'info');
-      const from = await DB.get('accounts', tx.fromAccountId);
-      if (!from) {
-        tx.status = 'failed';
-        tx.adminNotes = 'Source missing';
-        await DB.put('transactions', tx);
-        await DB.add('audit', {
-          id: 'al_' + uid(8),
-          action: 'approve_failed',
-          data: tx,
-          createdAt: nowISO()
-        });
-        return renderAdminTables();
-      }
-      if (from.balance < tx.amount) {
-        tx.status = 'failed';
-        tx.adminNotes = 'Insufficient funds';
-        await DB.put('transactions', tx);
-        await DB.add('audit', {
-          id: 'al_' + uid(8),
-          action: 'approve_failed',
-          data: tx,
-          createdAt: nowISO()
-        });
-        renderAdminTables();
-        return showToast('Insufficient funds', 'error');
-      }
-      from.balance = Math.round((from.balance - tx.amount) * 100) / 100;
-      await DB.put('accounts', from);
-      const toAcct = await DB.get('accounts', tx.toAccountId);
-      if (toAcct) {
-        toAcct.balance = Math.round((toAcct.balance + tx.amount) * 100) / 100;
-        await DB.put('accounts', toAcct);
-      }
-      tx.status = 'completed';
-      tx.processedAt = nowISO();
-      tx.adminNotes = 'Approved by admin';
-      await DB.put('transactions', tx);
-      await DB.add('audit', {
-        id: 'al_' + uid(8),
-        action: 'approve',
-        data: tx,
-        createdAt: nowISO()
-      });
-      showToast('Transaction processed', 'success');
-      renderAdminTables();
-      if (App.user) {
-        renderOverview();
-        renderTransactionsPage();
-      }
-      generateReceipt(tx);
-    };
-
-    window.adminReject = async function(txId) {
-      const tx = (await DB.getAll('transactions')).find(t => t.id === txId);
-      if (!tx) return showToast('Tx not found', 'error');
-      tx.status = 'declined';
-      tx.processedAt = nowISO();
-      tx.adminNotes = 'Declined by admin';
-      await DB.put('transactions', tx);
-      await DB.add('audit', {
-        id: 'al_' + uid(8),
-        action: 'reject',
-        data: tx,
-        createdAt: nowISO()
-      });
-      showToast('Transaction declined', 'info');
-      renderAdminTables();
-      if (App.user) {
-        renderOverview();
-        renderTransactionsPage();
-      }
-    };
-
-    // Export/Import for Admin
-    async function adminExportJSON() {
-      const payload = {
-        users: await DB.getAll('users'),
-        accounts: await DB.getAll('accounts'),
-        transactions: await DB.getAll('transactions'),
-        audit: await DB.getAll('audit')
-      };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'dgbank_backup.json';
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('JSON exported', 'success');
-    }
-    async function adminExportCSV() {
-      const users = await DB.getAll('users');
-      const csv = 'id,firstName,lastName,email,role,createdAt\n' + users.map(u =>
-        [u.id, u.firstName || '', u.lastName || '', u.email || '', u.role || 'user', u.createdAt || '']
-          .map(x => `"${String(x).replace(/"/g, '""')}"`)
-          .join(',')
-      ).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'users.csv';
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('CSV exported', 'success');
-    }
-    async function adminImportHandler() {
-      const f = document.getElementById('adminImportFile').files[0];
-      if (!f) return showToast('Select a file', 'error');
-      const txt = await f.text();
-      if (f.name.endsWith('.json')) {
-        try {
-          const obj = JSON.parse(txt);
-          if (obj.users) {
-            await DB.clear('users');
-            for (const u of obj.users) await DB.add('users', u);
-          }
-          if (obj.accounts) {
-            await DB.clear('accounts');
-            for (const a of obj.accounts) await DB.add('accounts', a);
-          }
-          if (obj.transactions) {
-            await DB.clear('transactions');
-            for (const t of obj.transactions) await DB.add('transactions', t);
-          }
-          if (obj.audit) {
-            await DB.clear('audit');
-            for (const a of obj.audit) await DB.add('audit', a);
-          }
-          showToast('JSON imported', 'success');
-          renderAdminTables();
-        } catch (e) {
-          console.error(e);
-          showToast('Import failed', 'error');
-        }
-      } else if (f.name.endsWith('.csv')) {
-        const lines = txt.split(/\r?\n/);
-        const hdr = lines.shift().split(',');
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          const cols = line.split(',');
-          const obj = {};
-          hdr.forEach((h, i) => obj[h] = (cols[i] || '').replace(/^"|"$/g, ''));
-          const pwh = await sha256str('Imported!2025');
-          const user = {
-            id: obj.id || 'u_' + uid(8),
-            firstName: obj.firstName || '',
-            lastName: obj.lastName || '',
-            email: obj.email || '',
-            password: pwh,
-            role: obj.role || 'user',
-            createdAt: obj.createdAt || nowISO()
-          };
-          await DB.add('users', user);
-        }
-        showToast('CSV imported', 'success');
-        renderAdminTables();
-      } else showToast('Unsupported file type', 'error');
-    }
-
-    // PDF Snapshot
-    document.getElementById('exportPdfBtn').addEventListener('click', async () => {
-      try {
-        showToast('Preparing snapshot PDF...', 'info', 2500);
-        const main = document.querySelector('body');
-        const prevDisplay = [];
-        document.querySelectorAll('.modal-backdrop').forEach((m, i) => {
-          prevDisplay[i] = m.style.display;
-          m.style.display = 'none';
-        });
-        const canvas = await html2canvas(main, { scale: 1.2, useCORS: true, allowTaint: true });
-        document.querySelectorAll('.modal-backdrop').forEach((m, i) => m.style.display = prevDisplay[i] || 'none');
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        const img = new Image();
-        img.src = imgData;
-        img.onload = function() {
-          const ratio = Math.min(pageWidth / img.width, pageHeight / img.height);
-          const imgW = img.width * ratio;
-          const imgH = img.height * ratio;
-          const x = (pageWidth - imgW) / 2;
-          const y = 20;
-          pdf.addImage(imgData, 'JPEG', x, y, imgW, imgH);
-          pdf.save('DeutscheGlobalBank_Snapshot.pdf');
-          showToast('PDF snapshot downloaded', 'success', 3000);
-        };
-      } catch (e) {
-        console.error('snapshot error', e);
-        showToast('Unable to create PDF snapshot', 'error');
-      }
-    });
-
-    // SHA-256 Utility
-    async function sha256str(s) {
-      const enc = new TextEncoder();
-      const data = enc.encode(s);
-      const h = await crypto.subtle.digest('SHA-256', data);
-      return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    // PDF Receipt
-    async function generateReceipt(tx) {
-      try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.setFontSize(16);
-        doc.text('DeutscheGlobal Bank', 40, 60);
-        doc.setFontSize(11);
-        doc.text(`Transaction Receipt`, 40, 80);
-        doc.setFontSize(10);
-        let y = 100;
-        doc.text(`ID: ${tx.id}`, 40, y);
-        y += 12;
-        doc.text(`Date: ${tx.processedAt || tx.createdAt}`, 40, y);
-        y += 12;
-        doc.text(`From: ${tx.fromAccountId}`, 40, y);
-        y += 12;
-        doc.text(`To: ${tx.toAccountId}`, 40, y);
-        y += 12;
-        doc.text(`Amount: ${tx.amount} ${tx.currency}`, 40, y);
-        y += 12;
-        doc.text(`Status: ${tx.status}`, 40, y);
-        doc.save(`receipt_${tx.id}.pdf`);
-      } catch (e) {
-        console.error(e);
-        showToast('PDF failed', 'error');
-      }
-    }
-
-    // Refresh UI
-    async function refreshUI() {
-      if (App.user) {
-        await populateAccountsDrop();
-        await renderOverview();
-      }
-    }
-
-    // Event Listeners
-    document.getElementById('authBtn').addEventListener('click', () => openModal('authModal'));
-    document.getElementById('closeAuth').addEventListener('click', () => closeModal('authModal'));
-    document.getElementById('openRegister').addEventListener('click', () => {
-      document.getElementById('signInForm').classList.add('hidden');
-      document.getElementById('registerForm').classList.remove('hidden');
-    });
-    document.getElementById('backToSignIn').addEventListener('click', () => {
-      document.getElementById('registerForm').classList.add('hidden');
-      document.getElementById('signInForm').classList.remove('hidden');
-    });
-    document.getElementById('openForgot').addEventListener('click', () => {
-      document.getElementById('signInForm').classList.add('hidden');
-      document.getElementById('forgotForm').classList.remove('hidden');
-    });
-    document.getElementById('backToSignIn2').addEventListener('click', () => {
-      document.getElementById('forgotForm').classList.add('hidden');
-      document.getElementById('signInForm').classList.remove('hidden');
-    });
-    document.getElementById('signInForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const em = document.getElementById('si_email').value.trim();
-      const pw = document.getElementById('si_password').value.trim();
-      if (!em || !pw) return showToast('Enter credentials', 'error');
-      try {
-        const u = await signIn(em, pw);
-        App.user = u;
-        document.getElementById('landing').style.display = 'none';
-        document.getElementById('appShell').style.display = 'block';
-        document.getElementById('userFullName').textContent = `${u.firstName} ${u.lastName}`;
-        document.getElementById('userEmail').textContent = u.email;
-        const total = (await DB.getAll('accounts')).filter(a => a.userId === u.id).reduce((s, a) => s + a.balance, 0);
-        document.getElementById('userTotal').textContent = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(total);
-        showToast('Signed in', 'success');
-        closeModal('authModal');
-        await populateAccountsDrop();
-        await renderOverview();
-      } catch (err) {
-        showToast(err.message || 'Sign in failed', 'error');
-      }
-    });
-    document.getElementById('registerForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const first = document.getElementById('r_first').value.trim();
-      const last = document.getElementById('r_last').value.trim();
-      const em = document.getElementById('r_email').value.trim();
-      const pw = document.getElementById('r_password').value.trim();
-      if (!first || !last || !em || pw.length < 8) return showToast('Complete form (password 8+ chars)', 'error');
-      try {
-        await registerUser({ first, last, email: em, password: pw });
-        showToast('Account created — please sign in', 'success');
-        document.getElementById('registerForm').reset();
-        document.getElementById('registerForm').classList.add('hidden');
-        document.getElementById('signInForm').classList.remove('hidden');
-      } catch (err) {
-        showToast(err.message || 'Registration failed', 'error');
-      }
-    });
-    document.getElementById('forgotForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      showToast('If an account exists, reset instructions will be sent (server required).', 'info');
-      document.getElementById('forgotForm').reset();
-      document.getElementById('forgotForm').classList.add('hidden');
-      document.getElementById('signInForm').classList.remove('hidden');
-    });
-    document.getElementById('signOut').addEventListener('click', () => signOut());
-    document.getElementById('navOverview').addEventListener('click', async () => renderOverview());
-    document.getElementById('navAccounts').addEventListener('click', async () => renderAccountsPage());
-    document.getElementById('navTransfer').addEventListener('click', async () => openTransferWith(null));
-    document.getElementById('navTx').addEventListener('click', async () => renderTransactionsPage());
-    document.getElementById('navInvest').addEventListener('click', () => showToast('Investments coming soon', 'info'));
-    document.getElementById('navLoans').addEventListener('click', () => showToast('Loan tools coming soon', 'info'));
-    document.getElementById('navSettings').addEventListener('click', () =>
-      document.getElementById('appContent').innerHTML = '<div class="account-card"><h3>Settings</h3><p class="muted">Manage preferences here.</p></div>'
-    );
-    document.getElementById('navSupport').addEventListener('click', () => openModal('chatModal'));
-    document.getElementById('contactBtn').addEventListener('click', () => openModal('chatModal'));
-    $all('.nav-btn').forEach(b => b.addEventListener('click', async function() {
-      $all('.nav-btn').forEach(x => x.classList.remove('active'));
-      this.classList.add('active');
-      const nav = this.dataset.nav;
-      if (nav === 'overview') await renderOverview();
-      else if (nav === 'transfer') openTransferWith(null);
-      else if (nav === 'transactions') await renderTransactionsPage();
-      else if (nav === 'support') openModal('chatModal');
-    }));
-
-    // Admin Access
-    let logoClicks = 0, logoTimer = null;
-    document.getElementById('siteLogo').addEventListener('click', () => {
-      logoClicks++;
-      clearTimeout(logoTimer);
-      logoTimer = setTimeout(() => logoClicks = 0, 1200);
-      if (logoClicks >= 3) {
-        logoClicks = 0;
-        const pwd = prompt('Super Admin access — enter password:');
-        if (pwd === 'admin/admin111') createAdminModal();
-        else showToast('Invalid admin password', 'error');
-      }
-    });
-
-    // Startup
-    (async function startup() {
-      await seedIfEmpty();
-      try {
-        const s = JSON.parse(localStorage.getItem('dgb_session') || 'null');
-        if (s && s.userId) {
-          const users = await DB.getAll('users');
-          App.user = users.find(u => u.id === s.userId) || null;
-        }
-      } catch (e) {
-        console.warn('session restore', e);
-      }
-      if (App.user) {
-        document.getElementById('landing').style.display = 'none';
-        document.getElementById('appShell').style.display = 'block';
-        document.getElementById('userFullName').textContent = `${App.user.firstName} ${App.user.lastName}`;
-        document.getElementById('userEmail').textContent = App.user.email;
-        const total = (await DB.getAll('accounts')).filter(a => a.userId === App.user.id).reduce((s, a) => s + a.balance, 0);
-        document.getElementById('userTotal').textContent = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(total);
-        await populateAccountsDrop();
-        await renderOverview();
-      } else {
-        document.getElementById('landing').style.display = 'block';
-        document.getElementById('appShell').style.display = 'none';
-      }
-      showToast('Application ready', 'success', 1500);
-    })();
-  </script>
+    </script>
 </body>
 </html>
+"""
+
+# Save the self-contained code to a file
+self_contained_file_path = 'deutsches_global_bank_index.html'
+with open(self_contained_file_path, 'w') as file:
+    file.write(self_contained_html)
+
+self_contained_file_path
